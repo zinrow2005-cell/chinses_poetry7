@@ -1,0 +1,13 @@
+胖超詩詞閱讀書寫系統 PKG369｜書寫頁返回閱讀頁修正檢查報告
+
+- manifest.webmanifest JSON：通過
+- 必要檔案檢查：通過
+- 舊版本字串檢查：通過
+- service-worker.js 語法：通過
+- writing.html pkg369-writing-leave-reader-js 語法：通過
+- reader.html pkg369-reader-return-selection-js 語法：通過
+- writing.html leaveWritingPage：通過
+- writing.html 手機底部離開按鈕攔截：通過
+- writing.html goBack 覆寫：通過
+- reader.html 返回作品恢復：通過
+- APP 圖示尺寸：通過

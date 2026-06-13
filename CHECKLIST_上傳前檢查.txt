@@ -1,0 +1,10 @@
+PKG369 上傳前檢查
+
+[ ] 整包解壓後全部覆蓋 repo 根目錄
+[ ] 不只替換單一 HTML
+[ ] 確認 icons/ 已一起上傳
+[ ] 確認 reader.html 與 writing.html 都在根目錄
+[ ] 手機測 mobile.html?pkg=369
+[ ] 手機測 reader.html?view=mobile&open=library&pkg=369
+[ ] 手機/平板測 writing.html?pkg=369
+[ ] 若有舊畫面，清除網站資料或重新加入主畫面 APP

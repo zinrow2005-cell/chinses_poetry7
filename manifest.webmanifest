@@ -1,0 +1,82 @@
+{
+  "name": "胖超詩詞閱讀書寫系統 PKG369",
+  "short_name": "胖超詩詞書寫",
+  "description": "PKG369 書寫頁返回閱讀頁修正版：修正手機/平板書寫頁底部離開按鈕無反應，保留順滑書寫與 APP 圖示。",
+  "lang": "zh-Hant-TW",
+  "start_url": "./mobile.html?source=pwa&pkg=369",
+  "scope": "./",
+  "id": "./pangchao-poetry-writing-pwa-pkg369",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "fullscreen"
+  ],
+  "orientation": "portrait-primary",
+  "background_color": "#efe2cb",
+  "theme_color": "#6f3510",
+  "categories": [
+    "education",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "開始閱讀",
+      "short_name": "閱讀",
+      "description": "開啟詩詞閱讀主畫面",
+      "url": "./reader.html?source=shortcut-read&view=mobile&open=library&pkg=369",
+      "icons": [
+        {
+          "src": "./icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "書寫練習",
+      "short_name": "書寫",
+      "description": "直接開啟臨帖書寫頁",
+      "url": "./writing.html?source=shortcut-writing&pkg=369",
+      "icons": [
+        {
+          "src": "./icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "./splash-screen.png",
+      "sizes": "1290x2796",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "胖超詩詞閱讀書寫系統啟動畫面"
+    }
+  ]
+}

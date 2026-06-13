@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="color-scheme" content="light"/>
+<meta name="theme-color" content="#8f4710"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="胖超詩詞書寫"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<meta name="daofa-build-version" content="369"/>
+<link rel="manifest" href="./manifest.webmanifest?pkg=369"/>
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png"/>
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png"/>
+<title>胖超詩詞閱讀書寫系統｜詩詞閱讀與臨帖書寫</title>
+<script id="pkg369-cache-reset">
+(function(){
+  try{
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.getRegistrations().then(function(regs){regs.forEach(function(r){r.unregister().catch(function(){});});}).catch(function(){});
+    }
+    if(window.caches){
+      caches.keys().then(function(keys){keys.forEach(function(k){caches.delete(k).catch(function(){});});}).catch(function(){});
+    }
+  }catch(e){}
+})();
+</script>
+<style>
+:root{font-family:"DFKai-SB","BiauKai","KaiTi","Microsoft JhengHei",serif;color:#321d10;background:#efe2cb;}
+html,body{margin:0;height:100%;min-height:100dvh;overscroll-behavior:none;}body{display:grid;place-items:center;padding:22px;box-sizing:border-box;background:radial-gradient(circle at 20% 10%,#fff9ec 0,#efe2cb 46%,#d8bd95 100%);}
+.card{width:min(620px,94vw);padding:28px;border-radius:28px;background:rgba(255,250,239,.96);border:1px solid #e3c69b;box-shadow:0 24px 70px rgba(67,40,18,.2);text-align:center;}
+.seal{width:62px;height:62px;margin:0 auto 14px;border-radius:20px;background:linear-gradient(135deg,#bd6a18,#883a0c);color:white;display:grid;place-items:center;font-size:32px;font-weight:900;}h1{margin:0 0 10px;font-size:30px;letter-spacing:.06em;}.muted{margin:0 0 20px;color:#725b49;line-height:1.7;font-weight:700;}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-width:180px;padding:14px 18px;border-radius:999px;background:linear-gradient(135deg,#bd711e,#8f4710);color:#fff;text-decoration:none;font-weight:900;border:0;box-shadow:0 12px 28px rgba(85,46,17,.22);cursor:pointer;position:relative;z-index:9999;pointer-events:auto}.btn.secondary{background:#fff8eb;color:#6f390f;border:1px solid #d9b98b;box-shadow:0 8px 22px rgba(85,46,17,.12)}.choiceRow{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:10px}.small{margin-top:14px;color:#806956;font-size:13px;line-height:1.7;}
+@media(max-width:560px){.choiceRow{display:grid;grid-template-columns:1fr}.btn{width:100%}}
+</style>
+</head>
+<body>
+<main class="card">
+  <div class="seal">胖</div>
+  <h1>胖超詩詞閱讀書寫系統</h1>
+  <p class="muted">首頁會停在這裡，不會自動跳到《春曉》。此版移除首頁 JS 攔截，按鈕是原生連結。</p>
+  <div class="choiceRow">
+    <a class="btn" href="./mobile.html?source=index&pkg=369">手機／平板版</a>
+    <a class="btn secondary" href="./reader.html?source=index&view=desktop&open=read&pkg=369">電腦版頁面</a>
+  </div>
+  <div class="choiceRow">
+    <a class="btn secondary" href="./reader.html?source=index&view=mobile&open=library&pkg=369">直接進入作品庫</a>
+    <a class="btn secondary" href="./writing.html?source=index&pkg=369">直接書寫</a>
+  </div>
+  <div class="small">PKG369｜已自動清除舊 PWA 快取。GitHub Pages 請整包覆蓋到 repo 根目錄。</div>
+</main>
+</body>
+</html>

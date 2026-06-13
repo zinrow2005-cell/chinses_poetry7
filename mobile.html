@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#8f4710" />
+<meta name="color-scheme" content="light" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="胖超詩詞書寫" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+<meta name="daofa-build-version" content="369" />
+<title>胖超詩詞閱讀書寫系統｜首頁</title>
+<link rel="manifest" href="./manifest.webmanifest?pkg=369" />
+<link rel="icon" sizes="192x192" href="./icons/icon-192.png" />
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+<script id="pkg369-cache-reset">
+(function(){
+  try{
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.getRegistrations().then(function(regs){regs.forEach(function(r){r.unregister().catch(function(){});});}).catch(function(){});
+    }
+    if(window.caches){
+      caches.keys().then(function(keys){keys.forEach(function(k){caches.delete(k).catch(function(){});});}).catch(function(){});
+    }
+  }catch(e){}
+})();
+</script>
+<style>
+:root{--bg:#efe3d3;--card:#fffaf2;--card2:#fffdf8;--ink:#3a2518;--muted:#785f49;--brand:#a85b18;--brand2:#8d460f;--line:#ead6bd;--shadow:0 30px 90px rgba(70,40,18,.18);--kai:"DFKai-SB","BiauKai","KaiTi","STKaiti","Noto Serif TC","PMingLiU",serif;}
+*{box-sizing:border-box}html,body{min-height:100%;margin:0}body{font-family:var(--kai);background:radial-gradient(circle at 30% 10%,rgba(255,255,255,.62),transparent 36%),linear-gradient(180deg,#efe3d3,#f7eedf);color:var(--ink);display:grid;place-items:center;padding:16px;overflow-x:hidden;-webkit-text-size-adjust:100%;}
+.home{width:min(790px,100%);background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid rgba(210,176,130,.72);border-radius:30px;padding:34px 24px 26px;text-align:center;box-shadow:var(--shadow);position:relative;z-index:1;}
+.seal{width:68px;height:68px;border-radius:21px;background:linear-gradient(180deg,#bd7029,#934a12);color:white;display:grid;place-items:center;margin:4px auto 12px;font-size:34px;font-weight:900;box-shadow:0 16px 42px rgba(146,74,18,.24)}
+.kicker{margin:0 0 8px;color:#87511f;font-weight:900;letter-spacing:.18em}.title{font-size:clamp(34px,8vw,55px);letter-spacing:.08em;line-height:1.18;margin:0 0 18px}.lead{font-size:15px;line-height:1.85;color:#6b513a;font-weight:900;margin:0 auto 18px;max-width:640px}.mode{display:inline-flex;align-items:center;gap:8px;border:1px solid #e3c497;border-radius:999px;background:#fff7ea;padding:8px 15px;color:#68401d;font-weight:900;margin:2px 0 16px}.actions,.switches{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:10px 0}
+.btn{appearance:none;-webkit-appearance:none;border:1px solid var(--line);background:#fffaf2;color:var(--ink);text-decoration:none;border-radius:999px;min-width:156px;padding:14px 20px;font-size:16px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 8px 22px rgba(90,50,18,.06);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:rgba(143,71,16,.18);position:relative;z-index:9999;pointer-events:auto;}
+.btn.primary{min-width:190px;background:linear-gradient(180deg,#bd7029,#934a12);border-color:#9c4b12;color:white;box-shadow:0 15px 28px rgba(143,71,16,.20)}.hint{font-family:serif;font-size:14px;line-height:1.7;color:#806956;margin:18px auto 0;max-width:660px}.small{margin-top:10px;font-size:12px;color:#9a785b}.reset{font-size:12px;margin-top:10px;color:#8a5626;line-height:1.6}
+@media(max-width:640px){body{padding:8px}.home{border-radius:24px;padding:28px 16px 22px}.actions,.switches{display:grid;grid-template-columns:1fr;gap:10px}.btn{width:100%;min-height:52px}.title{font-size:40px}.lead{font-size:14px}.seal{width:62px;height:62px;font-size:31px}}
+</style>
+<script>
+(function(){
+  function modeText(){var el=document.getElementById('modeText'); if(el) el.textContent=((innerWidth||0)<=1100?'手機／平板版':'電腦寬版可切換');}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',modeText,{once:true}); else modeText();
+})();
+</script>
+</head>
+<body>
+<main class="home" aria-label="胖超詩詞書寫首頁">
+  <div class="seal">胖</div>
+  <p class="kicker">DIVA_W 製作</p>
+  <h1 class="title">胖超詩詞閱讀書寫系統</h1>
+  <p class="lead">請先停在首頁選擇操作方式；手機或平板也可以自由切換「手機版」或「電腦版頁面」。</p>
+  <div class="mode"><b>目前版面：</b><span id="modeText">手機／平板版</span></div>
+  <div class="actions">
+    <a class="btn primary" href="./reader.html?source=light-home&view=mobile&open=library&pkg=369">進入手機作品庫</a>
+    <a class="btn" href="./reader.html?source=light-home&view=mobile&open=library&pkg=369">先選作品</a>
+    <a class="btn" href="./writing.html?source=light-home&pkg=369">直接書寫練習</a>
+  </div>
+  <div class="switches">
+    <a class="btn" href="./reader.html?source=light-switch&view=mobile&open=library&pkg=369">使用手機／平板版</a>
+    <a class="btn" href="./reader.html?source=light-switch&view=desktop&open=read&pkg=369">使用電腦版頁面</a>
+  </div>
+  <p class="hint">此首頁不再使用大型主程式或全域點擊攔截，按鈕是原生連結；即使手機尚未載入 JavaScript，也會直接跳轉。</p>
+  <p class="reset">PKG369 已自動清除舊 PWA 快取與舊 Service Worker，避免手機繼續吃到舊首頁。</p>
+  <div class="small">PKG369｜首頁原生連結＋移除快取干擾實測版</div>
+</main>
+<noscript><p style="position:fixed;left:12px;right:12px;bottom:12px;background:#fff;padding:10px;border:1px solid #d9b98b;border-radius:12px;text-align:center">JavaScript 關閉時仍可點上方連結進入系統。</p></noscript>
+</body>
+</html>

@@ -1,0 +1,12 @@
+胖超詩詞閱讀書寫系統 PKG369｜檔案與程式碼整理檢查報告
+
+- manifest.webmanifest JSON：通過
+- 必要檔案檢查：通過
+- 舊檔名/亂碼檔名檢查：通過
+- 版本號一致性：通過
+- index.html 基本結構：通過
+- mobile.html 基本結構：通過
+- reader.html 基本結構：通過
+- writing.html 基本結構：通過
+- service-worker.js 語法：通過
+- APP 圖示尺寸：通過
