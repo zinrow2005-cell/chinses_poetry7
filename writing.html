@@ -107358,5 +107358,127 @@ body.pkg345-writing-fullscreen #pkg343FloatingMini{display:none!important;}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init374,0)});else setTimeout(init374,0);
 })();
 </script>
+
+
+<!-- PKG375｜實際練字流程與防誤觸：單擊切字不丟稿、快速連按防抖、旋轉保筆跡 -->
+<style id="pkg375-safe-practice-css">
+#pkg375DraftState{display:inline-flex;align-items:center;gap:5px;min-height:30px;padding:5px 9px;border-radius:999px;background:#f7ead7;border:1px solid #e1c49b;color:#76502d;font-size:12px;font-weight:900;white-space:nowrap}
+#pkg375DraftState[data-state="saved"]{background:#eef5e9;border-color:#c9d9be;color:#42623a}
+#pkg375DraftState[data-state="restored"]{background:#eef3f8;border-color:#c4d4e2;color:#365e78}
+#pkg375DraftState[data-state="blocked"]{background:#fff0e9;border-color:#e7c0ad;color:#90451f}
+.pkg375NavBusy{pointer-events:none!important;opacity:.62!important;transform:none!important}
+@media(max-width:620px){#pkg375DraftState{font-size:11px;min-height:28px;padding:4px 7px}.pkg374QuickTools{scroll-snap-type:x proximity}.pkg374QuickTools>*{scroll-snap-align:start}}
+</style>
+<script id="pkg375-safe-practice-js">
+(function(){
+  'use strict';
+  var VERSION='PKG375-safe-practice-20261004';
+  var drafts=new Map(), navLocked=false, lastNavAt=0, rotateTimer=0, lastStrokeCount=0, internalSwitch=false;
+  function q(id){return document.getElementById(id)}
+  function clone(v){try{return structuredClone(v)}catch(e){try{return JSON.parse(JSON.stringify(v))}catch(x){return []}}}
+  function poemName(){try{var p=selectedPoem();return String((p&&p.title)||writeState.selected||'poem')}catch(e){return String(writeState.selected||'poem')}}
+  function unitKey(){
+    var idx=writeState.mode==='char'?writeState.charIndex:writeState.mode==='sentence'?writeState.lineIndex:0;
+    return [poemName(),writeState.mode,idx].join('::');
+  }
+  function hasInk(){return !!(writeState && writeState.strokeRecords && writeState.strokeRecords.length)}
+  function saveDraft(){
+    if(!window.writeState)return;
+    var key=unitKey();
+    if(hasInk()) drafts.set(key,clone(writeState.strokeRecords)); else drafts.delete(key);
+    lastStrokeCount=(writeState.strokeRecords||[]).length;
+  }
+  function restoreDraft(){
+    var rec=drafts.get(unitKey());
+    writeState.strokeRecords=rec?clone(rec):[];
+    writeState.currentStroke=null;writeState.currentSnapshot=null;
+    try{replayWritingStrokes()}catch(e){try{clearWritingCanvas(false)}catch(x){}}
+    setDraftState(rec&&rec.length?'已恢復這一字':'可開始書寫',rec&&rec.length?'restored':'');
+  }
+  function setDraftState(text,state){
+    var el=q('pkg375DraftState'); if(!el)return; el.textContent=text; el.dataset.state=state||'';
+  }
+  function ensureStateChip(){
+    if(q('pkg375DraftState'))return;
+    var tools=document.querySelector('.pkg374QuickTools'); if(!tools)return;
+    var s=document.createElement('span');s.id='pkg375DraftState';s.textContent='可開始書寫';tools.appendChild(s);
+  }
+  function lockNav(ms){
+    navLocked=true; document.querySelectorAll('#pkg374Prev,#pkg374Next').forEach(function(b){b.classList.add('pkg375NavBusy')});
+    setTimeout(function(){navLocked=false;document.querySelectorAll('#pkg374Prev,#pkg374Next').forEach(function(b){b.classList.remove('pkg375NavBusy')})},ms||360);
+  }
+  function saveProgress(){
+    try{localStorage.setItem('daofaPkg375Progress:'+poemName(),JSON.stringify({mode:writeState.mode,charIndex:writeState.charIndex||0,lineIndex:writeState.lineIndex||0,t:Date.now()}))}catch(e){}
+  }
+  function restoreProgress(){
+    try{
+      var raw=localStorage.getItem('daofaPkg375Progress:'+poemName()); if(!raw)return;
+      var d=JSON.parse(raw); if(!d||!d.mode)return;
+      writeState.mode=['char','sentence','full'].includes(d.mode)?d.mode:'char';
+      writeState.charIndex=Math.max(0,Math.min(Number(d.charIndex)||0,Math.max(0,poemCharsForWriting().length-1)));
+      writeState.lineIndex=Math.max(0,Math.min(Number(d.lineIndex)||0,Math.max(0,poemSentenceUnitsForWriting().length-1)));
+      renderWritingGuide(); clearWritingCanvas(false);
+    }catch(e){}
+  }
+  function wrapNav(name){
+    var old=window[name]; if(typeof old!=='function'||old.__pkg375)return;
+    var fn=function(evt){
+      var now=performance.now();
+      if(navLocked||now-lastNavAt<330){
+        try{evt&&evt.preventDefault&&evt.preventDefault();evt&&evt.stopPropagation&&evt.stopPropagation()}catch(e){}
+        setDraftState('操作太快，已防止跳字','blocked');
+        setTimeout(function(){setDraftState(hasInk()?'書寫中':'可開始書寫',hasInk()?'saved':'')},650);
+        return false;
+      }
+      lastNavAt=now; saveDraft(); lockNav(360);
+      internalSwitch=true; var r; try{r=old.apply(this,arguments)}finally{internalSwitch=false} saveProgress();
+      requestAnimationFrame(function(){restoreDraft();try{window.pkg374Sync&&window.pkg374Sync()}catch(e){}});
+      return r;
+    };fn.__pkg375=true;fn.__original=old;window[name]=fn;try{globalThis[name]=fn}catch(e){}
+  }
+  function wrapMode(){
+    var old=window.setWriteMode;if(typeof old!=='function'||old.__pkg375)return;
+    var fn=function(mode){
+      if(mode===writeState.mode)return;
+      saveDraft();internalSwitch=true;var r;try{r=old.apply(this,arguments)}finally{internalSwitch=false}saveProgress();requestAnimationFrame(restoreDraft);return r;
+    };fn.__pkg375=true;window.setWriteMode=fn;try{globalThis.setWriteMode=fn}catch(e){}
+  }
+  function wrapPoemSelect(){
+    var old=window.selectPoemByIndex;if(typeof old!=='function'||old.__pkg375)return;
+    var fn=function(){saveDraft();internalSwitch=true;var r;try{r=old.apply(this,arguments)}finally{internalSwitch=false}setTimeout(function(){restoreProgress();restoreDraft();saveProgress()},0);return r};
+    fn.__pkg375=true;window.selectPoemByIndex=fn;try{globalThis.selectPoemByIndex=fn}catch(e){}
+  }
+  function installStrokeWatcher(){
+    var canvas=q('writingCanvas');if(!canvas)return;
+    canvas.addEventListener('pointerup',function(){setTimeout(function(){
+      var n=(writeState.strokeRecords||[]).length;if(n!==lastStrokeCount){lastStrokeCount=n;saveDraft();setDraftState('這一字已暫存','saved');saveProgress()}
+    },30)},{passive:true});
+  }
+  function preserveAcrossResize(){
+    saveDraft();
+    clearTimeout(rotateTimer);rotateTimer=setTimeout(function(){
+      try{resizeWritingCanvas(true);renderWritingGuide();restoreDraft();setDraftState('旋轉後筆跡已保留','restored')}catch(e){}
+    },220);
+  }
+  function patchClearStatus(){
+    var old=window.clearWritingCanvas;if(typeof old!=='function'||old.__pkg375)return;
+    var fn=function(show){var r=old.apply(this,arguments);if(!writeState.isReplaying&&!internalSwitch){drafts.delete(unitKey());lastStrokeCount=0;if(show!==false)setDraftState('本字已清除','')}return r};
+    fn.__pkg375=true;window.clearWritingCanvas=fn;try{globalThis.clearWritingCanvas=fn}catch(e){}
+  }
+  function patchUndo(){
+    var old=window.undoLastStroke;if(typeof old!=='function'||old.__pkg375)return;
+    var fn=function(){var r=old.apply(this,arguments);saveDraft();setDraftState(hasInk()?'已復原並暫存':'已回到空白',hasInk()?'saved':'');return r};
+    fn.__pkg375=true;window.undoLastStroke=fn;try{globalThis.undoLastStroke=fn}catch(e){}
+  }
+  function init(){
+    ensureStateChip();restoreProgress();wrapNav('nextWriteUnit');wrapNav('prevWriteUnit');wrapMode();wrapPoemSelect();patchClearStatus();patchUndo();installStrokeWatcher();restoreDraft();saveProgress();
+    window.addEventListener('orientationchange',preserveAcrossResize,{passive:true});
+    var lastW=innerWidth,lastH=innerHeight;window.addEventListener('resize',function(){var dw=Math.abs(innerWidth-lastW),dh=Math.abs(innerHeight-lastH);lastW=innerWidth;lastH=innerHeight;if(dw>120||dh>120)preserveAcrossResize()},{passive:true});
+    window.addEventListener('pagehide',function(){saveDraft();saveProgress()},{passive:true});
+    document.documentElement.dataset.pkg375=VERSION;
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init,1850)},{once:true});else setTimeout(init,1850);
+})();
+</script>
 </body>
 </html>

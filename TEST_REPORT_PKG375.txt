@@ -1,0 +1,26 @@
+胖超詩詞閱讀書寫系統｜PKG375 實際練字流程與防誤觸
+日期：2026-10-04
+
+本版重點
+1. 上一個／下一個維持單擊直接切換，不新增每次確認步驟。
+2. 每個單字／句子的向量筆畫會在目前頁面工作階段暫存；誤切後返回可恢復原筆跡。
+3. 連續快速點選上一個／下一個加入約 330ms 防抖，避免一次跳過多個字句。
+4. 每次切字、切模式、離開頁面會保存目前練習進度。
+5. iPad／手機旋轉時先保存筆畫，重新校正 Canvas 後用向量筆畫重繪。
+6. 清除仍沿用 PKG372 的二次確認防誤觸；真正清除後同步移除該字暫存。
+7. 復原後同步更新該字暫存，不會返回時又出現已復原的筆畫。
+8. 練習快捷列新增狀態提示：可開始書寫／這一字已暫存／已恢復這一字／操作太快已防止跳字。
+
+靜態檢查
+- index.html：重複 ID 0
+- mobile.html：重複 ID 0
+- reader.html：重複 ID 0
+- writing.html：重複 ID 0
+- 四個頁面內嵌 JavaScript：Node 語法檢查通過
+- manifest.webmanifest：JSON 解析通過
+- 本機 script / link / img 引用缺失：0
+- Service Worker：已更新為 PKG375 kill switch
+
+執行環境限制
+- 嘗試使用容器內 Chromium headless 直接載入本機 writing.html 做畫面截圖，Chromium 在目前容器的 DBus/zygote 環境中持續掛起，無法把這項結果宣稱為真機／完整瀏覽器操作測試。
+- 因此本報告只記錄實際完成的程式流程修正、DOM/JS/JSON/本機引用檢查；iPad Safari、iPhone Safari、Android Chrome 的最終手感仍應以上傳 GitHub Pages 後的真機操作為準。
