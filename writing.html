@@ -107920,87 +107920,125 @@ body.pkg345-writing-fullscreen .pkg384Panel{top:50px!important;}
 })();
 </script>
 
-<style id="pkg390-unified-writing-layout-css">
-/* PKG390｜手機 / iPad 書寫頁與桌機版統一：同一工具列、同一設定內容，只做響應式排列 */
-@media (max-width:900px){
-  html,body{height:auto!important;min-height:100%!important;overflow-x:hidden!important;overflow-y:auto!important;position:static!important;inset:auto!important;width:auto!important;}
-  body{overscroll-behavior-y:auto!important;}
-  .page{
-    height:auto!important;min-height:100dvh!important;overflow:visible!important;
-    padding:calc(8px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) calc(14px + env(safe-area-inset-bottom)) calc(8px + env(safe-area-inset-left))!important;
-  }
-  .topbar{
-    position:relative!important;top:auto!important;margin-bottom:8px!important;padding:10px 12px!important;border-radius:20px!important;
-  }
-  .topbar .brand{gap:8px!important;}.topbar .logo{width:36px!important;height:36px!important;border-radius:14px!important;font-size:18px!important;}
-  .topbar h1{font-size:16px!important;}.topbar p{display:block!important;font-size:12px!important;}.topbar .row{display:flex!important;}
-  .studio{
-    display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important;
-    height:auto!important;min-height:0!important;overflow:visible!important;
-  }
-  .boardCard{
-    height:auto!important;min-height:0!important;display:flex!important;flex-direction:column!important;
-    padding:10px!important;border-radius:22px!important;overflow:visible!important;
-  }
-  .boardHead{display:flex!important;justify-content:space-between!important;align-items:flex-start!important;gap:8px!important;margin-bottom:6px!important;}
-  .boardHead h2{font-size:18px!important;max-width:none!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;}
-  .boardHead p{display:block!important;font-size:12px!important;}.boardHead .status{display:inline-flex!important;max-width:none!important;width:auto!important;min-width:0!important;white-space:normal!important;}
+<!-- PKG389｜手機 / iPad / 電腦統一書寫介面 -->
+<style id="pkg389-unified-writing-ui-css">
+/* 全裝置只使用 PKG383/384 的同一套主工具列；停用歷史行動版 Dock / FloatingMini */
+.pkg343Dock,#pkg343FloatingMini,.pkg343FloatingMini,#pkg372ModeToggle,#pkg372MoreTools{display:none!important;}
 
-  /* 停用舊手機 / iPad 專屬 Dock，全部改用桌機版工具列 */
-  #pkg343Dock,.pkg343Dock,#pkg343FloatingMini,.pkg343FloatingMini,.pkg343SheetBackdrop,.pkg343SheetHandle,.pkg343StatusBar{display:none!important;}
-  html.pkg343-settings-open,body.pkg343-settings-open{overflow:auto!important;}
-
-  .writeToolbar{
-    display:flex!important;flex-direction:column!important;gap:7px!important;
-    margin:7px 0 9px!important;padding:8px!important;max-height:none!important;overflow:visible!important;
-    border-radius:17px!important;background:#fff7e8!important;border:1px dashed #e4caa7!important;
-  }
-  .toolbarCore{
-    order:1!important;display:flex!important;flex-wrap:nowrap!important;gap:6px!important;overflow-x:auto!important;overflow-y:hidden!important;
-    padding-bottom:2px!important;white-space:nowrap!important;-webkit-overflow-scrolling:touch!important;scrollbar-width:none!important;
-  }
-  .toolbarCore::-webkit-scrollbar{display:none!important;}
-  .toolbarCore button{flex:0 0 auto!important;min-height:40px!important;padding:7px 11px!important;font-size:13px!important;}
-  .toolbarCoreHint{display:none!important;}
-  .toolbarMiniDock{
-    order:2!important;display:flex!important;flex-wrap:nowrap!important;gap:7px!important;justify-content:flex-start!important;
-    overflow-x:auto!important;overflow-y:hidden!important;white-space:nowrap!important;-webkit-overflow-scrolling:touch!important;scrollbar-width:none!important;
-  }
-  .toolbarMiniDock::-webkit-scrollbar{display:none!important;}
-  .toolbarDockBtn{flex:0 0 42px!important;width:42px!important;min-width:42px!important;height:42px!important;}
-  .toolbarPopoverHost{order:3!important;width:100%!important;}
-  .toolbarPopover{position:relative!important;margin-top:2px!important;padding:9px 10px!important;border-radius:14px!important;}
-  .toolbarPopoverRow{gap:7px!important;}.toolbarPopoverRow button,.toolbarPopoverRow select,.toolbarPopoverRow input{min-height:40px!important;}
-
-  .writeBoard{
-    flex:none!important;width:100%!important;height:min(64dvh,680px)!important;min-height:440px!important;max-height:none!important;
-    border-radius:20px!important;overflow:hidden!important;touch-action:none!important;
-  }
-  .writeBoard[data-mode="char"] .writeGuide{font-size:clamp(165px,42vw,330px)!important;}
-  .writeBoard[data-mode="sentence"] .writeGuide{font-size:clamp(40px,9vw,82px)!important;}
-  .writeBoard[data-mode="full"] .writeGuide{font-size:clamp(28px,6.5vw,52px)!important;inset:24px!important;}
-
-  /* 桌機右欄設定在小螢幕改接在畫布下方，內容與桌機完全相同 */
-  .side{
-    position:static!important;z-index:auto!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;
-    display:block!important;width:100%!important;max-height:none!important;overflow:visible!important;transform:none!important;
-    padding:0!important;margin:0!important;border-radius:0!important;box-shadow:none!important;background:transparent!important;
-  }
-  .side .panel{display:block!important;margin-bottom:10px!important;border-radius:18px!important;}
-  .pkg343-settings-open .side{transform:none!important;}
+/* 避免舊版 touch CSS 再把主工具列關掉 */
+@media(max-width:1100px),(hover:none) and (pointer:coarse){
+  html,body{width:100%!important;max-width:100%!important;min-height:100%!important;overflow-x:hidden!important;}
+  body:not(.pkg345-writing-fullscreen){position:static!important;height:auto!important;min-height:100dvh!important;overflow-y:auto!important;overflow-x:hidden!important;}
+  body:not(.pkg345-writing-fullscreen) .page{display:block!important;width:100%!important;height:auto!important;min-height:100dvh!important;max-height:none!important;overflow:visible!important;padding:8px!important;}
+  body:not(.pkg345-writing-fullscreen) .topbar{display:flex!important;position:relative!important;top:auto!important;margin-bottom:8px!important;padding:10px 12px!important;}
+  body:not(.pkg345-writing-fullscreen) .topbar .brand{display:flex!important;}
+  body:not(.pkg345-writing-fullscreen) .topbar .row{display:flex!important;}
+  body:not(.pkg345-writing-fullscreen) .studio{height:auto!important;min-height:0!important;overflow:visible!important;}
+  body:not(.pkg345-writing-fullscreen) .boardCard{height:auto!important;min-height:0!important;padding:12px!important;overflow:visible!important;}
+  body:not(.pkg345-writing-fullscreen) .boardHead{display:flex!important;justify-content:space-between!important;align-items:flex-start!important;gap:10px!important;margin-bottom:8px!important;}
+  body:not(.pkg345-writing-fullscreen) .boardHead p{display:block!important;}
+  body:not(.pkg345-writing-fullscreen) .writeToolbar{display:flex!important;flex-direction:column!important;gap:7px!important;max-height:none!important;overflow:visible!important;padding:8px!important;margin:8px 0 10px!important;}
+  body:not(.pkg345-writing-fullscreen) .toolbarCore{display:flex!important;flex-wrap:nowrap!important;gap:6px!important;overflow-x:auto!important;overflow-y:hidden!important;white-space:nowrap!important;-webkit-overflow-scrolling:touch!important;scrollbar-width:none!important;padding-bottom:2px!important;}
+  body:not(.pkg345-writing-fullscreen) .toolbarCore::-webkit-scrollbar{display:none!important;}
+  body:not(.pkg345-writing-fullscreen) .toolbarCore button{display:inline-flex!important;flex:0 0 auto!important;min-height:40px!important;padding:8px 11px!important;}
+  body:not(.pkg345-writing-fullscreen) .toolbarMiniDock{display:flex!important;flex-wrap:nowrap!important;gap:7px!important;overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch!important;scrollbar-width:none!important;padding:0!important;}
+  body:not(.pkg345-writing-fullscreen) .toolbarMiniDock::-webkit-scrollbar{display:none!important;}
+  body:not(.pkg345-writing-fullscreen) .toolbarDockBtn{display:flex!important;flex:0 0 40px!important;width:40px!important;min-width:40px!important;height:40px!important;}
+  body:not(.pkg345-writing-fullscreen) .toolbarPopoverHost{display:block!important;width:100%!important;}
+  body:not(.pkg345-writing-fullscreen) .toolbarPopover{position:relative!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;width:100%!important;max-width:none!important;margin-top:5px!important;}
+  body:not(.pkg345-writing-fullscreen) .secondaryTools{display:flex!important;}
+  body:not(.pkg345-writing-fullscreen) .writeBoard{height:min(62vh,720px)!important;min-height:420px!important;max-height:none!important;overflow:hidden!important;border-radius:20px!important;}
+  body:not(.pkg345-writing-fullscreen) .side{position:static!important;left:auto!important;right:auto!important;top:auto!important;bottom:auto!important;z-index:auto!important;width:auto!important;max-width:none!important;max-height:none!important;height:auto!important;overflow:visible!important;transform:none!important;box-shadow:none!important;border-radius:22px!important;padding:12px!important;background:#fffaf2!important;}
+  .pkg343SheetBackdrop,.pkg343SheetHandle{display:none!important;}
 }
-@media (max-width:560px){
-  .page{padding-left:6px!important;padding-right:6px!important;}
-  .topbar{padding:8px 10px!important;}.topbar p{display:none!important;}.topbar .row{gap:5px!important;flex-wrap:wrap!important;}
-  .boardCard{padding:8px!important;}.boardHead{align-items:center!important;}.boardHead p{display:none!important;}.boardHead .status{font-size:11px!important;}
-  .writeToolbar{padding:7px!important;margin:5px 0 7px!important;}
-  .toolbarCore button{min-height:38px!important;padding:6px 9px!important;font-size:12px!important;}
-  .toolbarDockBtn{flex-basis:40px!important;width:40px!important;min-width:40px!important;height:40px!important;}
-  .writeBoard{height:58dvh!important;min-height:360px!important;border-radius:17px!important;}
-  .writeBoard[data-mode="char"] .writeGuide{font-size:clamp(145px,46vw,280px)!important;}
-  .side .panel{padding:12px!important;}
+
+/* iPad / 平板：維持與電腦版相同的「畫布 + 右側設定」雙欄 */
+@media(min-width:740px) and (max-width:1100px){
+  body:not(.pkg345-writing-fullscreen) .page{padding:10px!important;}
+  body:not(.pkg345-writing-fullscreen) .topbar h1{font-size:18px!important;}
+  body:not(.pkg345-writing-fullscreen) .topbar p{display:block!important;font-size:12px!important;}
+  body:not(.pkg345-writing-fullscreen) .studio{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(250px,30vw)!important;gap:12px!important;align-items:start!important;}
+  body:not(.pkg345-writing-fullscreen) .boardCard{min-width:0!important;}
+  body:not(.pkg345-writing-fullscreen) .side{display:block!important;position:sticky!important;top:8px!important;max-height:calc(100dvh - 20px)!important;overflow-y:auto!important;overflow-x:hidden!important;}
+  body:not(.pkg345-writing-fullscreen) .writeBoard{height:calc(100dvh - 250px)!important;min-height:480px!important;}
+  body:not(.pkg345-writing-fullscreen) .toolbarCore button{font-size:13px!important;padding:7px 9px!important;}
+  body:not(.pkg345-writing-fullscreen) .toolbarCoreHint{display:none!important;}
+  body:not(.pkg345-writing-fullscreen) .boardHead h2{font-size:20px!important;}
 }
-/* 全螢幕維持 PKG384/385 的極簡小圖示模式，不顯示一般工具列 */
-body.pkg345-writing-fullscreen .writeToolbar{display:none!important;}
-body.pkg345-writing-fullscreen .side{display:none!important;}
+
+/* 手機：仍使用完全相同的元件，只改為單欄與可橫滑工具列 */
+@media(max-width:739px){
+  body:not(.pkg345-writing-fullscreen) .page{padding:6px!important;}
+  body:not(.pkg345-writing-fullscreen) .topbar{padding:8px 10px!important;border-radius:16px!important;}
+  body:not(.pkg345-writing-fullscreen) .topbar .logo{width:34px!important;height:34px!important;}
+  body:not(.pkg345-writing-fullscreen) .topbar h1{font-size:15px!important;}
+  body:not(.pkg345-writing-fullscreen) .topbar p{display:none!important;}
+  body:not(.pkg345-writing-fullscreen) .topbar .row{display:none!important;}
+  body:not(.pkg345-writing-fullscreen) .studio{display:block!important;}
+  body:not(.pkg345-writing-fullscreen) .boardCard{padding:8px!important;border-radius:18px!important;}
+  body:not(.pkg345-writing-fullscreen) .boardHead{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;}
+  body:not(.pkg345-writing-fullscreen) .boardHead h2{font-size:17px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+  body:not(.pkg345-writing-fullscreen) .boardHead p{display:none!important;}
+  body:not(.pkg345-writing-fullscreen) .boardHead .status{font-size:11px!important;max-width:32vw!important;overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;}
+  body:not(.pkg345-writing-fullscreen) .writeToolbar{padding:6px!important;border-radius:15px!important;}
+  body:not(.pkg345-writing-fullscreen) .toolbarCore button{font-size:12px!important;min-height:38px!important;padding:7px 9px!important;}
+  body:not(.pkg345-writing-fullscreen) .toolbarDockBtn{flex-basis:38px!important;width:38px!important;min-width:38px!important;height:38px!important;}
+  body:not(.pkg345-writing-fullscreen) .toolbarCoreHint{display:none!important;}
+  body:not(.pkg345-writing-fullscreen) .writeBoard{height:62dvh!important;min-height:440px!important;border-radius:17px!important;}
+  body:not(.pkg345-writing-fullscreen) .side{margin-top:10px!important;padding:10px!important;border:1px solid var(--line)!important;}
+  body:not(.pkg345-writing-fullscreen) .side .panel{margin-bottom:10px!important;}
+}
+
+/* 全螢幕仍使用 PKG384 的統一小圖示列，不回到舊手機 dock */
+body.pkg345-writing-fullscreen .pkg343Dock,
+body.pkg345-writing-fullscreen #pkg343FloatingMini,
+body.pkg345-writing-fullscreen .pkg343FloatingMini{display:none!important;}
+body.pkg345-writing-fullscreen .pkg384FsMini{display:block!important;}
 </style>
+<script id="pkg389-unified-writing-ui-js">
+(function(){
+  function normalize(){
+    document.body.classList.remove('pkg372ShowWritingTools','pkg372ModeMenuOpen','pkg343-settings-open');
+    var d=document.getElementById('pkg343Dock'); if(d)d.setAttribute('aria-hidden','true');
+    var f=document.getElementById('pkg343FloatingMini'); if(f)f.setAttribute('aria-hidden','true');
+    if(typeof syncQuickTraceButtons==='function' && window.writeState) try{syncQuickTraceButtons(writeState.font);}catch(e){}
+  }
+  function afterRotate(){setTimeout(function(){normalize();try{if(typeof setupWritingCanvas==='function')setupWritingCanvas(true);}catch(e){}},180);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',normalize);else normalize();
+  window.addEventListener('pageshow',normalize);
+  window.addEventListener('orientationchange',afterRotate,{passive:true});
+  window.addEventListener('resize',function(){clearTimeout(window.__pkg389resize);window.__pkg389resize=setTimeout(normalize,100);},{passive:true});
+})();
+</script>
+
+<!-- PKG389 hotfix｜強制退出歷史浮動 Dock，手機頂欄與桌機同構 -->
+<style id="pkg389-final-unify-hotfix-css">
+/* 舊行動 Dock 有歷史 JS 會在載入後動態改回 flex，最後層再鎖一次 */
+body:not(.pkg345-writing-fullscreen) #pkg343FloatingMini,
+body:not(.pkg345-writing-fullscreen) .pkg343FloatingMini,
+body:not(.pkg345-writing-fullscreen) .pkg343Dock{display:none!important;visibility:hidden!important;pointer-events:none!important;}
+@media(max-width:739px){
+  body:not(.pkg345-writing-fullscreen) .topbar{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:8px!important;}
+  body:not(.pkg345-writing-fullscreen) .topbar .brand{min-width:0!important;flex:1 1 auto!important;}
+  body:not(.pkg345-writing-fullscreen) .topbar .row{display:flex!important;flex:0 0 auto!important;gap:6px!important;}
+  body:not(.pkg345-writing-fullscreen) .topbar .row button{min-height:36px!important;padding:6px 9px!important;font-size:11px!important;white-space:nowrap!important;}
+}
+</style>
+<script id="pkg389-final-unify-hotfix-js">
+(function(){
+  function hardHideLegacyDock(){
+    ['pkg343FloatingMini','pkg343Dock'].forEach(function(id){
+      var el=document.getElementById(id);if(!el)return;
+      try{el.style.setProperty('display','none','important');el.style.setProperty('visibility','hidden','important');el.style.setProperty('pointer-events','none','important');}catch(e){}
+    });
+    document.querySelectorAll('.pkg343FloatingMini,.pkg343Dock').forEach(function(el){
+      try{el.style.setProperty('display','none','important');el.style.setProperty('visibility','hidden','important');el.style.setProperty('pointer-events','none','important');}catch(e){}
+    });
+  }
+  hardHideLegacyDock();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hardHideLegacyDock,{once:true});
+  window.addEventListener('load',function(){hardHideLegacyDock();setTimeout(hardHideLegacyDock,250);setTimeout(hardHideLegacyDock,1200);},{once:true});
+  var mo=new MutationObserver(function(muts){for(var i=0;i<muts.length;i++){var t=muts[i].target;if(t&&(t.id==='pkg343FloatingMini'||t.id==='pkg343Dock'||(t.classList&&(t.classList.contains('pkg343FloatingMini')||t.classList.contains('pkg343Dock'))))){hardHideLegacyDock();break;}}});
+  try{mo.observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:['class','style'],childList:true});}catch(e){}
+})();
+</script>
