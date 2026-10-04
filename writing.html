@@ -107730,6 +107730,34 @@ body.pkg345-writing-fullscreen #pkg343FloatingMini{display:none!important;}
 })();
 </script>
 
+
+<style id="pkg385-fullscreen-progress-safe-css">
+/* PKG385｜全螢幕：小圖示列與練習進度分層，不互相遮擋 */
+body.pkg345-writing-fullscreen #pkg374PracticeRail{display:none!important;}
+body.pkg345-writing-fullscreen #pkg376Summary{
+  display:flex!important;position:fixed!important;z-index:2147483630!important;
+  top:calc(58px + env(safe-area-inset-top))!important;left:10px!important;right:10px!important;
+  width:auto!important;height:46px!important;min-height:46px!important;margin:0!important;padding:6px 10px!important;
+  border-radius:14px!important;background:rgba(255,252,247,.96)!important;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 7px 22px rgba(48,28,12,.10)!important;
+}
+body.pkg345-writing-fullscreen #pkg376Panel{
+  position:fixed!important;z-index:2147483625!important;top:calc(110px + env(safe-area-inset-top))!important;left:10px!important;right:10px!important;
+  max-height:min(38dvh,320px)!important;overflow:auto!important;margin:0!important;
+}
+body.pkg345-writing-fullscreen .boardCard.pkg333FullscreenHost .writeBoard.fullscreenWriting{
+  top:calc(110px + env(safe-area-inset-top))!important;
+  height:calc(100dvh - 110px - env(safe-area-inset-top))!important;
+  min-height:calc(100dvh - 110px - env(safe-area-inset-top))!important;
+  bottom:0!important;
+}
+body.pkg345-writing-fullscreen .pkg384Panel{top:50px!important;}
+@media(max-width:700px){
+ body.pkg345-writing-fullscreen #pkg376Summary{top:calc(50px + env(safe-area-inset-top))!important;height:42px!important;min-height:42px!important;padding:5px 8px!important;}
+ body.pkg345-writing-fullscreen #pkg376Panel{top:calc(98px + env(safe-area-inset-top))!important;left:6px!important;right:6px!important;}
+ body.pkg345-writing-fullscreen .boardCard.pkg333FullscreenHost .writeBoard.fullscreenWriting{top:calc(98px + env(safe-area-inset-top))!important;height:calc(100dvh - 98px - env(safe-area-inset-top))!important;min-height:calc(100dvh - 98px - env(safe-area-inset-top))!important;}
+}
+</style>
 </body>
 </html>
 
@@ -107819,3 +107847,33 @@ body.pkg345-writing-fullscreen .boardCard.pkg333FullscreenHost .writeBoard.fulls
  setInterval(sync,900);
 })();
 </script>
+
+
+<style id="pkg385-fullscreen-progress-safe-final-css">
+/* PKG385 final override: must stay after PKG384 rules */
+body.pkg345-writing-fullscreen #pkg374PracticeRail{display:none!important;}
+body.pkg345-writing-fullscreen #pkg376Summary{
+  display:flex!important;position:fixed!important;z-index:2147483632!important;
+  top:calc(58px + env(safe-area-inset-top))!important;left:10px!important;right:10px!important;
+  width:auto!important;height:46px!important;min-height:46px!important;margin:0!important;padding:6px 10px!important;
+  border-radius:14px!important;background:rgba(255,252,247,.97)!important;
+  backdrop-filter:blur(14px)!important;-webkit-backdrop-filter:blur(14px)!important;
+  box-shadow:0 7px 22px rgba(48,28,12,.10)!important;
+}
+body.pkg345-writing-fullscreen #pkg376Panel{
+  position:fixed!important;z-index:2147483628!important;
+  top:calc(110px + env(safe-area-inset-top))!important;left:10px!important;right:10px!important;
+  max-height:min(38dvh,320px)!important;overflow:auto!important;margin:0!important;
+}
+body.pkg345-writing-fullscreen .boardCard.pkg333FullscreenHost .writeBoard.fullscreenWriting{
+  top:calc(110px + env(safe-area-inset-top))!important;
+  height:calc(100dvh - 110px - env(safe-area-inset-top))!important;
+  min-height:calc(100dvh - 110px - env(safe-area-inset-top))!important;bottom:0!important;
+}
+body.pkg345-writing-fullscreen .pkg384Panel{top:50px!important;}
+@media(max-width:700px){
+ body.pkg345-writing-fullscreen #pkg376Summary{top:calc(50px + env(safe-area-inset-top))!important;height:42px!important;min-height:42px!important;padding:5px 8px!important;left:6px!important;right:6px!important;}
+ body.pkg345-writing-fullscreen #pkg376Panel{top:calc(98px + env(safe-area-inset-top))!important;left:6px!important;right:6px!important;}
+ body.pkg345-writing-fullscreen .boardCard.pkg333FullscreenHost .writeBoard.fullscreenWriting{top:calc(98px + env(safe-area-inset-top))!important;height:calc(100dvh - 98px - env(safe-area-inset-top))!important;min-height:calc(100dvh - 98px - env(safe-area-inset-top))!important;}
+}
+</style>

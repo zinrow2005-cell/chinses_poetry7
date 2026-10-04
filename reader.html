@@ -35,7 +35,9 @@ html.daofaPreMobile:not(.daofaPreReady) body{overflow:hidden!important;backgroun
     var qs=new URLSearchParams(location.search);
     var explicit=qs.get('open')||qs.get('tab');
     var saved=''; try{saved=localStorage.getItem('daofaInterfaceMode')||'';}catch(e){}
-    var mode=qs.get('view')||saved||(((window.innerWidth||0)<=1100)?'mobile':'desktop');
+    /* PKG385: 裝置寬度優先，避免以前儲存的 mobile 模式讓桌機三欄主頁閃一下後消失 */
+    var explicitView=qs.get('view')||'';
+    var mode=explicitView||( ((window.innerWidth||0)<=1100) ? 'mobile' : 'desktop' );
     document.documentElement.classList.add(mode==='desktop'?'daofaPreDesktop':'daofaPreMobile');
     /* PKG369 reader: no homepage overlay in reader.html */
     document.addEventListener('DOMContentLoaded',function(){
@@ -105613,7 +105615,23 @@ scheduleSyncLibraryHeight();
 (function(){const VER='358';
 function shouldIgnoreNavToggle(el){return !!(el&&el.closest&&el.closest('button,a,input,select,textarea,.mobileBottomNav,.sidebar,.library,.speechPanel,.daofaDisplayPanel,.authorModal,.modal,.item,.tabs'))}
 function setMobileFavMode(on){try{state.favOnly=!!on; const btn=document.getElementById('favOnlyBtn'); if(btn){btn.textContent=state.favOnly?'★ 顯示全部作品':'★ 我的收藏';btn.classList.toggle('on',!!state.favOnly);} if(typeof renderList==='function')renderList();}catch(e){}}
-document.addEventListener('DOMContentLoaded',()=>{document.body.classList.add('daofaMobileMode','daofaForceMobile');const nav=document.createElement('nav');nav.className='mobileBottomNav';nav.innerHTML=`<button data-tab="read" class="active" onclick="DaofaMobile.go('read')">📖<br>閱讀</button><button data-tab="filters" onclick="DaofaMobile.go('filters')">🔎<br>篩選</button><button data-tab="allLibrary" onclick="DaofaMobile.go('allLibrary')">📚<br>作品集</button><button data-tab="library" onclick="DaofaMobile.go('library')">⭐<br>收藏</button><button data-tab="learning" onclick="DaofaMobile.go('learning')">📝<br>學習</button><button data-tab="write" onclick="DaofaMobile.go('write')">🖌️<br>書寫</button>`;document.body.appendChild(nav);const hint=document.createElement('div');hint.className='mobileTapHint';hint.textContent='點一下顯示功能列';document.body.appendChild(hint);document.addEventListener('click',e=>{if(!document.body.classList.contains('daofaMobileMode'))return;if(shouldIgnoreNavToggle(e.target))return;document.body.classList.toggle('mobileNavHidden');},{capture:false});DaofaMobile.go('read');});
+document.addEventListener('DOMContentLoaded',()=>{
+   const qs=new URLSearchParams(location.search);
+   const useMobile=(qs.get('view')==='mobile') || (qs.get('view')!=='desktop' && innerWidth<=1100);
+   if(!useMobile){
+     document.body.classList.remove('daofaMobileMode','daofaForceMobile','mobileShowFilters','mobileShowLibrary','mobileNavHidden');
+     document.documentElement.classList.remove('daofaPreMobile');
+     document.documentElement.classList.add('daofaPreDesktop','daofaPreReady');
+     return;
+   }
+   document.body.classList.add('daofaMobileMode','daofaForceMobile');
+   if(!document.querySelector('.mobileBottomNav')){
+     const nav=document.createElement('nav');nav.className='mobileBottomNav';nav.innerHTML=`<button data-tab="read" class="active" onclick="DaofaMobile.go('read')">📖<br>閱讀</button><button data-tab="filters" onclick="DaofaMobile.go('filters')">🔎<br>篩選</button><button data-tab="allLibrary" onclick="DaofaMobile.go('allLibrary')">📚<br>作品集</button><button data-tab="library" onclick="DaofaMobile.go('library')">⭐<br>收藏</button><button data-tab="learning" onclick="DaofaMobile.go('learning')">📝<br>學習</button><button data-tab="write" onclick="DaofaMobile.go('write')">🖌️<br>書寫</button>`;document.body.appendChild(nav);
+   }
+   if(!document.querySelector('.mobileTapHint')){const hint=document.createElement('div');hint.className='mobileTapHint';hint.textContent='點一下顯示功能列';document.body.appendChild(hint);}
+   document.addEventListener('click',e=>{if(!document.body.classList.contains('daofaMobileMode'))return;if(shouldIgnoreNavToggle(e.target))return;document.body.classList.toggle('mobileNavHidden');},{capture:false});
+   DaofaMobile.go('read');
+ });
 window.DaofaMobile={go(tab){document.body.classList.remove('mobileShowFilters','mobileShowLibrary');document.body.classList.remove('mobileNavHidden');document.querySelectorAll('.mobileBottomNav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));if(tab==='filters'){setMobileFavMode(false);document.body.classList.add('mobileShowFilters');}else if(tab==='allLibrary'){setMobileFavMode(false);document.body.classList.add('mobileShowLibrary');}else if(tab==='library'){setMobileFavMode(true);document.body.classList.add('mobileShowLibrary');}else if(tab==='learning'){setMobileFavMode(false);try{if(typeof showTab==='function')showTab('learning');}catch(e){}const main=document.querySelector('.main');if(main)main.scrollTo({top:0,behavior:'smooth'});}else if(tab==='write'){try{if(typeof openWritingPage==='function'){openWritingPage();return;}}catch(e){} location.href='./writing.html?v='+VER+'&t='+Date.now();}else{setMobileFavMode(false);}}};})();
 </script>
 <script>
@@ -106311,7 +106329,10 @@ body.daofaHomeMode .mobileBottomNav{display:none!important;}
     },true);
   }
   function openRequested(){
-    var open=qs().get('open')||qs().get('tab')||'';
+    var params=qs();
+    var open=params.get('open')||params.get('tab')||'';
+    /* PKG385: 桌機進入閱讀頁時固定保留三欄主頁，不自動打開手機抽屜 */
+    if(innerWidth>1100 && params.get('view')!=='mobile'){ keepBottom(); return; }
     if(!open){ keepBottom(); return; }
     document.body.classList.remove('daofaHomeMode');
     if(open==='library'||open==='allLibrary'||open==='works'){
@@ -106622,7 +106643,7 @@ body.daofaMobileMode.mobileShowFilters .main,body.daofaMobileMode.mobileShowLibr
 <script id="pkg372-flow-js">
 (function(){
   var PKG='372';
-  function isTouchLayout(){return innerWidth<=1100 || (navigator.maxTouchPoints||0)>0;}
+  function isTouchLayout(){const q=new URLSearchParams(location.search);return q.get('view')==='mobile' || (q.get('view')!=='desktop' && innerWidth<=1100);}
   function simplifyMobileNav(){
     var nav=document.querySelector('.mobileBottomNav'); if(!nav) return;
     var fav=nav.querySelector('button[data-tab="library"]'); if(fav) fav.remove();
@@ -106677,5 +106698,29 @@ body.daofaMobileMode.mobileShowFilters .main,body.daofaMobileMode.mobileShowLibr
 })();
 </script>
 
+
+<style id="pkg385-desktop-home-stability-css">
+@media (min-width:1101px){
+  body:not(.daofaMobileMode) .app{display:grid!important;visibility:visible!important;opacity:1!important;grid-template-columns:300px 350px minmax(0,1fr)!important;gap:18px!important;}
+  body:not(.daofaMobileMode) .sidebar,body:not(.daofaMobileMode) .library,body:not(.daofaMobileMode) .main{transform:none!important;opacity:1!important;visibility:visible!important;pointer-events:auto!important;}
+  body:not(.daofaMobileMode) .mobileBottomNav,body:not(.daofaMobileMode) .mobileTapHint,body:not(.daofaMobileMode) .daofaMobileQuickDock{display:none!important;}
+}
+</style>
+<script id="pkg385-desktop-home-stability-js">
+(function(){
+ function stabilize(){
+   const qs=new URLSearchParams(location.search);
+   const desktop=innerWidth>1100 && qs.get('view')!=='mobile';
+   if(!desktop||!document.body)return;
+   document.body.classList.remove('daofaMobileMode','daofaForceMobile','mobileShowFilters','mobileShowLibrary','mobileNavHidden','mobileDialogOpen','daofaHomeMode');
+   document.documentElement.classList.remove('daofaPreMobile','daofaPreHome');
+   document.documentElement.classList.add('daofaPreDesktop','daofaPreReady');
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',stabilize,{once:true});else stabilize();
+ window.addEventListener('load',stabilize,{once:true});
+ window.addEventListener('resize',stabilize);
+ setTimeout(stabilize,180);setTimeout(stabilize,650);
+})();
+</script>
 </body>
 </html>
