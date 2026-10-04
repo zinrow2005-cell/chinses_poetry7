@@ -293,6 +293,21 @@ label{font-size:var(--daofa-label-size,12px) !important;}
 @media(max-width:380px){.traceQuickGrid{grid-template-columns:1fr!important;}}
 
 @media(min-width:761px){.toolbarPopover{animation:toolbarPopIn .12s ease-out;}@keyframes toolbarPopIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}}
+
+/* PKG383｜桌機整合工具列：舊 GoodNotes 工具列功能併入收合圖示 */
+@media(min-width:901px){
+  .pkg343Dock{display:none!important;}
+  .writeToolbar{margin:8px 0 10px!important;padding:8px 10px!important;grid-template-columns:minmax(0,1fr) auto!important;}
+  .toolbarCore{gap:6px!important;flex-wrap:wrap!important;}
+  .toolbarCore button{min-height:36px!important;padding:7px 11px!important;}
+  .toolbarMiniDock{gap:6px!important;justify-content:flex-end!important;}
+  .toolbarCoreHint{display:none!important;}
+}
+.mergedQuickPreset{display:flex;gap:7px;flex-wrap:wrap;align-items:center;}
+.mergedQuickPreset button{min-height:36px!important;padding:7px 10px!important;border-radius:999px!important;}
+.mergedPaperBtns{display:flex;gap:7px;flex-wrap:wrap;}
+.mergedPaperBtns button{min-height:36px!important;padding:7px 10px!important;}
+.toolbarPopover .sectionLabel{font-size:12px;font-weight:900;color:#7c5839;margin:4px 0 2px;}
 </style>
 
 <script>
@@ -488,6 +503,8 @@ body.pkg345-writing-fullscreen .pkg346Bar{display:none!important;}
       </div>
       <div class="writeToolbar">
         <div class="toolbarCore toolbarRow primaryTools" aria-label="核心書寫操作">
+          <button type="button" onclick="goBack()">回閱讀</button>
+          <button type="button" class="primary" onclick="startTracePractice()">開始</button>
           <button id="modeCharBtn" type="button" class="on">單字</button>
           <button id="modeSentenceBtn" type="button">句子</button>
           <button id="modeFullBtn" type="button">全文</button>
@@ -515,6 +532,15 @@ body.pkg345-writing-fullscreen .pkg346Bar{display:none!important;}
           </div>
           <div id="panelBrush" class="toolbarPopover" aria-hidden="true">
             <h4>筆刷設定</h4>
+            <div class="sectionLabel">快速筆型</div>
+            <div class="mergedQuickPreset">
+              <button type="button" onclick="setPkg343BrushPreset('brush')">柔順毛筆</button>
+              <button type="button" onclick="setBrushType('ink')">濃墨筆</button>
+              <button type="button" onclick="setBrushType('round')">硬筆</button>
+              <button type="button" onclick="setBrushType('pencil')">鉛筆</button>
+              <button type="button" onclick="setBrushType('dry')">乾筆飛白</button>
+            </div>
+            <div class="sectionLabel">筆種／粗細／透明度</div>
             <div class="toolbarPopoverRow">
               <select id="toolbarBrushType" class="pkg333MiniSelect" title="筆種" onchange="setBrushType(this.value)"><option value="round">圓筆</option><option value="calligraphy" selected>毛筆</option><option value="ink">沾墨筆</option><option value="marker">麥克筆</option><option value="pencil">鉛筆</option><option value="dry">乾筆飛白</option></select>
               <select id="toolbarBrushSize" class="toolbarSelect" title="筆刷粗細" onchange="syncToolbarBrushSize(this.value)"><option value="5">細筆</option><option value="8" selected>標準</option><option value="12">粗筆</option><option value="18">特粗</option><option value="26">超大</option></select>
@@ -522,18 +548,34 @@ body.pkg345-writing-fullscreen .pkg346Bar{display:none!important;}
             </div>
           </div>
           <div id="panelColor" class="toolbarPopover" aria-hidden="true">
-            <h4>顏色</h4>
+            <h4>墨色</h4>
             <div class="toolbarPopoverRow">
-              <input id="toolbarInkColor" class="toolbarColor" type="color" value="#23140b" title="墨色" onchange="setInkColor(this.value)">
-              <button id="paletteBtn" type="button" onclick="togglePalettePanel()">調色盤</button>
+              <button type="button" class="pkg343ColorBtn" style="--swatch:#23140b" title="墨黑" onclick="setPkg343Color('#23140b')"></button>
+              <button type="button" class="pkg343ColorBtn" style="--swatch:#000000" title="純黑" onclick="setPkg343Color('#000000')"></button>
+              <button type="button" class="pkg343ColorBtn" style="--swatch:#5b2a13" title="棕墨" onclick="setPkg343Color('#5b2a13')"></button>
+              <button type="button" class="pkg343ColorBtn" style="--swatch:#8d460f" title="褐墨" onclick="setPkg343Color('#8d460f')"></button>
+              <button type="button" class="pkg343ColorBtn" style="--swatch:#7a1f16" title="朱紅" onclick="setPkg343Color('#7a1f16')"></button>
+              <button type="button" class="pkg343ColorBtn" style="--swatch:#1f3a2d" title="墨綠" onclick="setPkg343Color('#1f3a2d')"></button>
+              <button type="button" class="pkg343ColorBtn" style="--swatch:#1f4d6b" title="墨藍" onclick="setPkg343Color('#1f4d6b')"></button>
+              <input id="toolbarInkColor" class="toolbarColor" type="color" value="#23140b" title="自訂墨色" onchange="setInkColor(this.value)">
+              <button id="paletteBtn" type="button" onclick="togglePalettePanel()">更多顏色</button>
             </div>
           </div>
           <div id="panelView" class="toolbarPopover" aria-hidden="true">
-            <h4>畫面與座標</h4>
+            <h4>畫面與紙張</h4>
+            <div class="sectionLabel">紙張格線</div>
+            <div class="mergedPaperBtns">
+              <button type="button" onclick="setPkg343Paper('mi')">米字格</button>
+              <button type="button" onclick="setPkg343Paper('square')">方格</button>
+              <button type="button" onclick="setPkg343Paper('line')">橫線</button>
+              <button type="button" onclick="setPkg343Paper('blank')">空白</button>
+            </div>
+            <div class="sectionLabel">畫面</div>
             <div class="toolbarPopoverRow">
               <button type="button" onclick="enterWritingFullscreen()">全螢幕書寫</button>
               <button id="exitFullscreenBtn" type="button" onclick="exitWritingFullscreen()">關閉全螢幕</button>
               <button type="button" onclick="calibrateWritingCanvas()">校正座標</button>
+              <button type="button" onclick="openPkg343Settings()">書寫設定</button>
             </div>
           </div>
           <div id="panelExport" class="toolbarPopover" aria-hidden="true">
