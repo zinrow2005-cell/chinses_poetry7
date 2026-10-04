@@ -105295,7 +105295,7 @@ setTimeout(()=>{const b=$('focusWritingBtn'); if(b){b.classList.add('pkg330-focu
   function read(){
     let raw={};
     try{raw=JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(e){raw={};}
-    return {font:fontStacks[raw.font]?raw.font:defaults.font,ui:num(raw.ui,defaults.ui,85,130),poem:num(raw.poem,defaults.poem,85,155),writing:num(raw.writing,defaults.writing,80,170)};
+    return {font:fontStacks[raw.font]?raw.font:defaults.font,ui:num(raw.ui,defaults.ui,85,130),poem:num(raw.poem,defaults.poem,85,155),writing:num(raw.writing,defaults.writing,60,200)};
   }
   function write(st){try{localStorage.setItem(KEY,JSON.stringify(st));}catch(e){}}
   function px(base,scale){return (base*scale/100).toFixed(2)+'px';}
@@ -105352,14 +105352,25 @@ setTimeout(()=>{const b=$('focusWritingBtn'); if(b){b.classList.add('pkg330-focu
   window.daofaApplyWritingSize=function(){
     const guide=document.getElementById('writeGuide'); if(!guide)return;
     const scale=getWritingScale();
-    const base=parseFloat(guide.dataset.daofaPkg295BaseSize||guide.style.fontSize||getComputedStyle(guide).fontSize);
-    if(Number.isFinite(base)&&base>0)guide.style.fontSize=Math.round(base*scale)+'px';
+    let base=parseFloat(guide.dataset.daofaPkg295BaseSize||'');
+    if(!Number.isFinite(base)||base<=0){
+      const inline=parseFloat(guide.style.fontSize||'');
+      const computed=parseFloat(getComputedStyle(guide).fontSize||'');
+      base=(Number.isFinite(inline)&&inline>0)?inline:computed;
+      if(Number.isFinite(base)&&base>0) guide.dataset.daofaPkg295BaseSize=String(base);
+    }
+    if(Number.isFinite(base)&&base>0){
+      const finalPx=Math.max(18,Math.round(base*scale));
+      guide.style.setProperty('font-size',finalPx+'px','important');
+      guide.dataset.daofaAppliedScale=String(Math.round(scale*100));
+    }
     const board=document.getElementById('writeBoard');
     if(board&&board.dataset.mode==='full'){
       const finalSize=parseFloat(guide.style.fontSize||getComputedStyle(guide).fontSize)||base||80;
-      const lineFactor=parseFloat(guide.style.lineHeight||getComputedStyle(guide).lineHeight)||1.56;
+      let lineFactor=parseFloat(guide.style.lineHeight||'');
+      if(!Number.isFinite(lineFactor)||lineFactor>10) lineFactor=1.56;
       const rows=Math.max(1,String(guide.textContent||'').split('\n').filter(Boolean).length);
-      const need=Math.ceil(84+rows*finalSize*(lineFactor<10?lineFactor:1.56)+170);
+      const need=Math.ceil(84+rows*finalSize*lineFactor+170);
       const current=parseFloat(board.style.minHeight)||0;
       board.style.minHeight=Math.max(current,need,680)+'px';
       if(typeof window.resizeWritingCanvas==='function')window.resizeWritingCanvas();
@@ -105368,8 +105379,9 @@ setTimeout(()=>{const b=$('focusWritingBtn'); if(b){b.classList.add('pkg330-focu
   if(typeof window.fitWritingGuideToBoard==='function'&&!window.fitWritingGuideToBoard.__daofaPkg295Wrapped){
     const original=window.fitWritingGuideToBoard;
     const wrapped=function(){
-      const result=original.apply(this,arguments);
       const guide=document.getElementById('writeGuide');
+      if(guide){guide.style.removeProperty('font-size');guide.removeAttribute('data-daofa-applied-scale');}
+      const result=original.apply(this,arguments);
       if(guide){const size=parseFloat(guide.style.fontSize||getComputedStyle(guide).fontSize); if(Number.isFinite(size)&&size>0)guide.dataset.daofaPkg295BaseSize=String(size);}
       window.daofaApplyWritingSize();
       return result;
@@ -108103,3 +108115,19 @@ body:not(.pkg345-writing-fullscreen) .pkg343Dock{display:none!important;visibili
 body.pkg345-writing-fullscreen .pkg384Panel{top:106px!important;}
 @media(max-width:700px){body.pkg345-writing-fullscreen .pkg384Panel{top:94px!important;}.pkg391SizeValue{min-width:56px;height:34px;font-size:14px;}}
 </style>
+
+<style id="pkg392-writing-size-force-css">
+/* PKG392｜底字縮放最終套用層：由 JS 以 inline !important 控制，避免行動版 clamp 覆蓋 */
+.writeGuide{transition:font-size .12s ease!important;}
+</style>
+<script id="pkg392-writing-size-force-js">
+(function(){
+  function apply(){try{if(typeof window.daofaApplyWritingSize==='function')window.daofaApplyWritingSize();}catch(e){}}
+  function refit(){try{if(typeof window.fitWritingGuideToBoard==='function')window.fitWritingGuideToBoard();else apply();}catch(e){apply();}}
+  ['resize','orientationchange'].forEach(ev=>window.addEventListener(ev,()=>{clearTimeout(window.__pkg392SizeT);window.__pkg392SizeT=setTimeout(refit,120);},{passive:true}));
+  document.addEventListener('fullscreenchange',()=>setTimeout(refit,60));
+  document.addEventListener('webkitfullscreenchange',()=>setTimeout(refit,60));
+  document.addEventListener('daofa-fonts-ready',()=>setTimeout(refit,40));
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(refit,80),{once:true});else setTimeout(refit,80);
+})();
+</script>
