@@ -108042,3 +108042,50 @@ body:not(.pkg345-writing-fullscreen) .pkg343Dock{display:none!important;visibili
   try{mo.observe(document.documentElement,{subtree:true,attributes:true,attributeFilter:['class','style'],childList:true});}catch(e){}
 })();
 </script>
+
+<!-- PKG390｜手機 / iPad 頁面捲動修正：整頁可拖，畫布維持書寫 -->
+<style id="pkg390-touch-scroll-fix-css">
+@media(max-width:1100px),(hover:none) and (pointer:coarse){
+  html:not(.pkg345-writing-fullscreen){height:auto!important;min-height:100%!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior-y:auto!important;}
+  body:not(.pkg345-writing-fullscreen){position:static!important;inset:auto!important;width:100%!important;height:auto!important;min-height:100dvh!important;max-height:none!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior-y:auto!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important;}
+  body:not(.pkg345-writing-fullscreen) .page{display:block!important;position:relative!important;height:auto!important;min-height:100dvh!important;max-height:none!important;overflow:visible!important;overscroll-behavior:visible!important;}
+  body:not(.pkg345-writing-fullscreen) .studio{height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;}
+  body:not(.pkg345-writing-fullscreen) .boardCard{height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;}
+  body:not(.pkg345-writing-fullscreen) .side{position:static!important;top:auto!important;height:auto!important;min-height:0!important;max-height:none!important;overflow:visible!important;overscroll-behavior:auto!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important;}
+  body:not(.pkg345-writing-fullscreen) .topbar,
+  body:not(.pkg345-writing-fullscreen) .writeToolbar,
+  body:not(.pkg345-writing-fullscreen) .boardHead,
+  body:not(.pkg345-writing-fullscreen) .pkg374PracticeRail,
+  body:not(.pkg345-writing-fullscreen) .pkg376Results{touch-action:pan-y!important;}
+  /* 只有真正畫布阻止瀏覽器捲動，避免寫字時頁面位移 */
+  body:not(.pkg345-writing-fullscreen) .writeBoard,
+  body:not(.pkg345-writing-fullscreen) #writingCanvas{touch-action:none!important;overscroll-behavior:contain!important;}
+}
+/* iPad 仍保留與桌機同樣雙欄，只取消右欄獨立捲動，改由整頁捲動 */
+@media(min-width:740px) and (max-width:1100px){
+  body:not(.pkg345-writing-fullscreen) .studio{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(250px,30vw)!important;gap:12px!important;align-items:start!important;}
+  body:not(.pkg345-writing-fullscreen) .side{position:static!important;max-height:none!important;overflow:visible!important;}
+  body:not(.pkg345-writing-fullscreen) .writeBoard{height:min(68dvh,760px)!important;min-height:480px!important;}
+}
+/* 手機：設定欄自然排在畫布下方，整頁直接往下滑 */
+@media(max-width:739px){
+  body:not(.pkg345-writing-fullscreen) .studio{display:block!important;}
+  body:not(.pkg345-writing-fullscreen) .writeBoard{height:58dvh!important;min-height:400px!important;}
+  body:not(.pkg345-writing-fullscreen) .side{display:block!important;margin-top:10px!important;}
+}
+</style>
+<script id="pkg390-touch-scroll-fix-js">
+(function(){
+  function unlockPage(){
+    if(document.body.classList.contains('pkg345-writing-fullscreen')) return;
+    document.documentElement.style.removeProperty('overflow');
+    document.body.style.removeProperty('overflow');
+    document.body.style.removeProperty('position');
+    document.body.style.removeProperty('height');
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',unlockPage,{once:true}); else unlockPage();
+  window.addEventListener('pageshow',unlockPage,{passive:true});
+  window.addEventListener('orientationchange',()=>setTimeout(unlockPage,180),{passive:true});
+  window.addEventListener('resize',()=>{clearTimeout(window.__pkg390unlock);window.__pkg390unlock=setTimeout(unlockPage,80);},{passive:true});
+})();
+</script>
