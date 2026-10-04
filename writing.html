@@ -107811,6 +107811,7 @@ body.pkg345-writing-fullscreen .boardCard.pkg333FullscreenHost .writeBoard.fulls
   brush:'<svg viewBox="0 0 24 24"><path d="M14 4l6 6"/><path d="M5 19c2.5.7 5-.1 6.6-1.8L19 9.8 14.2 5l-7.4 7.4C5.1 14 4.3 16.5 5 19z"/></svg>',
   color:'<svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 100 18h1.2a1.8 1.8 0 001.3-3.1 1.8 1.8 0 011.3-3.1H18A3 3 0 0021 12a9 9 0 00-9-9z"/><circle cx="7.5" cy="10" r=".8"/><circle cx="10" cy="6.8" r=".8"/><circle cx="14" cy="6.8" r=".8"/></svg>',
   grid:'<svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM12 4v16M4 12h16M4 4l16 16M20 4L4 20"/></svg>',
+  font:'<svg viewBox="0 0 24 24"><path d="M5 19L10.5 5h3L19 19"/><path d="M7.5 13h9"/><path d="M3 5h4M5 3v4"/></svg>',
   more:'<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>'
  };
  function btn(title,ico,action,extra=''){return `<button type="button" class="pkg384IconBtn ${extra}" title="${title}" aria-label="${title}" ${action}>${icon[ico]}</button>`;}
@@ -107830,17 +107831,23 @@ body.pkg345-writing-fullscreen .boardCard.pkg333FullscreenHost .writeBoard.fulls
      ${btn('筆刷與粗細','brush','onclick="pkg384ToggleFsPanel(\'pkg384BrushPanel\',this)"','pkg384PanelBtn')}
      ${btn('顏色','color','onclick="pkg384ToggleFsPanel(\'pkg384ColorPanel\',this)"','pkg384PanelBtn')}
      ${btn('格線','grid','onclick="pkg384ToggleFsPanel(\'pkg384GridPanel\',this)"','pkg384PanelBtn')}
+     ${btn('字體大小','font','onclick="pkg384ToggleFsPanel(\'pkg391FontSizePanel\',this)"','pkg384PanelBtn')}
      ${btn('其他','more','onclick="pkg384ToggleFsPanel(\'pkg384MorePanel\',this)"','pkg384PanelBtn')}
    </div>
    <div id="pkg384BrushPanel" class="pkg384Panel"><div class="pkg384PanelRow">${pens}<span class="pkg384Sep"></span>${sizes}</div></div>
    <div id="pkg384ColorPanel" class="pkg384Panel"><div class="pkg384PanelRow">${colors}<button type="button" onclick="togglePalettePanel()">更多調色盤</button></div></div>
    <div id="pkg384GridPanel" class="pkg384Panel"><div class="pkg384PanelRow"><button type="button" onclick="setPkg343Paper('mi');pkg384CloseFsPanels()">米字格</button><button type="button" onclick="setPkg343Paper('square');pkg384CloseFsPanels()">方格</button><button type="button" onclick="setPkg343Paper('line');pkg384CloseFsPanels()">橫線</button><button type="button" onclick="setPkg343Paper('blank');pkg384CloseFsPanels()">空白</button></div></div>
+   <div id="pkg391FontSizePanel" class="pkg384Panel"><div class="pkg384PanelRow"><button type="button" onclick="pkg391AdjustWritingSize(-10)">－</button><strong id="pkg391WritingSizeValue" class="pkg391SizeValue">100%</strong><button type="button" onclick="pkg391AdjustWritingSize(10)">＋</button><span class="pkg384Sep"></span><button type="button" onclick="pkg391SetWritingSize(80)">80%</button><button type="button" onclick="pkg391SetWritingSize(100)">100%</button><button type="button" onclick="pkg391SetWritingSize(120)">120%</button><button type="button" onclick="pkg391SetWritingSize(150)">150%</button></div></div>
    <div id="pkg384MorePanel" class="pkg384Panel"><div class="pkg384PanelRow"><button type="button" onclick="pkg346ManualSave()">存檔</button><button type="button" onclick="pkg346RestoreDraft()">續寫</button><button type="button" onclick="pkg346ZoomOut()">縮小</button><button type="button" onclick="pkg346ResetView()">100%</button><button type="button" onclick="pkg346ZoomIn()">放大</button><button type="button" onclick="pkg346TogglePanMode()">拖曳</button><button type="button" onclick="calibrateWritingCanvas()">校正</button><button type="button" onclick="exportWritingPNG()">匯出 PNG</button></div></div>`;
    (document.querySelector('.boardCard')||document.body).appendChild(wrap);
  }
+ function pkg391ReadWritingSize(){try{return Math.max(60,Math.min(200,Number((window.DaofaDisplay&&DaofaDisplay.read().writing)||100)||100));}catch(e){return 100;}}
+ function pkg391SyncWritingSize(){const el=$('pkg391WritingSizeValue');if(el)el.textContent=pkg391ReadWritingSize()+'%';}
+ window.pkg391SetWritingSize=function(v){v=Math.max(60,Math.min(200,Math.round(Number(v)||100)));try{if(window.DaofaDisplay&&typeof DaofaDisplay.update==='function')DaofaDisplay.update({writing:v});else{const raw=JSON.parse(localStorage.getItem('daofaDisplaySettingsV1')||'{}');raw.writing=v;localStorage.setItem('daofaDisplaySettingsV1',JSON.stringify(raw));if(typeof window.daofaApplyWritingSize==='function')window.daofaApplyWritingSize();}}catch(e){}pkg391SyncWritingSize();try{if(typeof renderWritingGuide==='function')renderWritingGuide();if(typeof window.daofaApplyWritingSize==='function')window.daofaApplyWritingSize();}catch(e){}};
+ window.pkg391AdjustWritingSize=function(delta){pkg391SetWritingSize(pkg391ReadWritingSize()+(Number(delta)||0));};
  window.pkg384CloseFsPanels=function(){document.querySelectorAll('.pkg384Panel').forEach(p=>p.classList.remove('show'));document.querySelectorAll('.pkg384PanelBtn').forEach(b=>b.classList.remove('active'));};
  window.pkg384ToggleFsPanel=function(id,b){const p=$(id);if(!p)return;const open=!p.classList.contains('show');pkg384CloseFsPanels();if(open){p.classList.add('show');b&&b.classList.add('active');}};
- function sync(){build();const active=!!(document.fullscreenElement||$('writeBoard')?.classList.contains('fullscreenWriting')); if(!active) pkg384CloseFsPanels();}
+ function sync(){build();pkg391SyncWritingSize();const active=!!(document.fullscreenElement||$('writeBoard')?.classList.contains('fullscreenWriting')); if(!active) pkg384CloseFsPanels();}
  document.addEventListener('click',e=>{if(!e.target.closest('#pkg384FsMini')&&document.body.classList.contains('pkg345-writing-fullscreen'))pkg384CloseFsPanels();});
  document.addEventListener('fullscreenchange',()=>setTimeout(sync,30));
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sync,{once:true});else sync();
@@ -108089,3 +108096,10 @@ body:not(.pkg345-writing-fullscreen) .pkg343Dock{display:none!important;visibili
   window.addEventListener('resize',()=>{clearTimeout(window.__pkg390unlock);window.__pkg390unlock=setTimeout(unlockPage,80);},{passive:true});
 })();
 </script>
+
+<style id="pkg391-fullscreen-font-size-css">
+/* PKG391｜全螢幕臨摹底字大小控制 */
+.pkg391SizeValue{display:inline-flex;align-items:center;justify-content:center;min-width:62px;height:36px;padding:0 10px;border-radius:999px;background:#6b3a18;color:#fff;font-size:15px;font-weight:900;}
+body.pkg345-writing-fullscreen .pkg384Panel{top:106px!important;}
+@media(max-width:700px){body.pkg345-writing-fullscreen .pkg384Panel{top:94px!important;}.pkg391SizeValue{min-width:56px;height:34px;font-size:14px;}}
+</style>
