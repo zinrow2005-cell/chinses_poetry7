@@ -1,11 +1,11 @@
 {
-  "name": "胖超詩詞閱讀書寫系統 PKG373",
+  "name": "胖超詩詞閱讀書寫系統 PKG374",
   "short_name": "胖超詩詞書寫",
-  "description": "PKG373 書寫手感專項版：單一書寫事件管線、觸控筆防手掌誤觸、輕量向量復原、跨裝置橫直式自由切換。",
+  "description": "PKG374 書寫手感專項版：單一書寫事件管線、觸控筆防手掌誤觸、輕量向量復原、跨裝置橫直式自由切換。",
   "lang": "zh-Hant-TW",
   "start_url": "./mobile.html?source=pwa&pkg=373",
   "scope": "./",
-  "id": "./pangchao-poetry-writing-pwa-pkg373",
+  "id": "./pangchao-poetry-writing-pwa-pkg374",
   "display": "standalone",
   "display_override": [
     "standalone",

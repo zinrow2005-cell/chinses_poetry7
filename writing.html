@@ -107254,5 +107254,109 @@ body.pkg345-writing-fullscreen #pkg343FloatingMini{display:none!important;}
 })();
 </script>
 
+
+<!-- PKG374｜書法練習體驗優化：固定進度列、快速濃淡/格線、不中斷切字 -->
+<style id="pkg374-practice-experience-css">
+.pkg374PracticeRail{display:flex;align-items:center;gap:10px;margin-top:10px;padding:10px 12px;border:1px solid #e2c7a0;background:rgba(255,250,242,.96);border-radius:18px;box-shadow:0 8px 24px rgba(70,40,15,.08);position:relative;z-index:5}
+.pkg374NavBtn{min-width:92px;min-height:46px;font-weight:900;border-radius:14px}
+.pkg374NavBtn.next{background:linear-gradient(180deg,#b86b27,#8d460f);color:#fff;border-color:#9c4b12}
+.pkg374PracticeCenter{min-width:0;flex:1;display:grid;grid-template-columns:auto minmax(100px,1fr) auto;gap:10px;align-items:center}
+.pkg374CurrentChar{min-width:54px;max-width:116px;padding:5px 12px;border-radius:14px;background:#fff6e7;border:1px solid #e4c49a;color:#6e390f;font-size:26px;line-height:1.15;font-weight:900;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pkg374ProgressWrap{min-width:0}.pkg374ProgressText{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:#755333;font-weight:800;margin-bottom:5px}.pkg374Progress{height:8px;border-radius:999px;background:#ead8bf;overflow:hidden}.pkg374Progress>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#c17b38,#8d460f);border-radius:inherit;transition:width .18s ease}
+.pkg374QuickTools{display:flex;align-items:center;gap:6px;flex-wrap:nowrap}.pkg374QuickTools button{min-height:38px;padding:7px 10px;border-radius:12px;font-size:13px;font-weight:900;white-space:nowrap}.pkg374QuickTools button.on{background:#8d460f;color:#fff;border-color:#8d460f}
+.pkg374ModeSeg{display:inline-flex;padding:3px;background:#f1e1ca;border-radius:13px;gap:3px}.pkg374ModeSeg button{border:0;background:transparent;box-shadow:none;min-height:32px;padding:5px 9px;border-radius:10px}.pkg374ModeSeg button.on{background:#fff;color:#7a3d10;box-shadow:0 2px 8px rgba(70,40,15,.12)}
+.pkg374DesktopOnlyHint{font-size:11px;color:#8a6b50;white-space:nowrap}
+@media(max-width:1100px){
+  .pkg374PracticeRail{margin-top:8px;padding:8px;gap:7px;border-radius:15px}
+  .pkg374NavBtn{min-width:70px;min-height:44px;padding:7px 9px}
+  .pkg374PracticeCenter{grid-template-columns:auto minmax(72px,1fr);gap:7px}
+  .pkg374QuickTools{grid-column:1/-1;width:100%;overflow-x:auto;padding-bottom:1px;scrollbar-width:none}.pkg374QuickTools::-webkit-scrollbar{display:none}
+  .pkg374CurrentChar{font-size:22px;min-width:48px;padding:5px 8px}
+  .pkg374DesktopOnlyHint{display:none}
+  .primaryTools #prevUnitBtn,.primaryTools #nextUnitBtn{display:none!important}
+}
+@media(max-width:620px){
+  .pkg374PracticeRail{display:grid;grid-template-columns:64px minmax(0,1fr) 64px;gap:6px;padding:7px}
+  .pkg374NavBtn{min-width:0;width:64px;padding:7px 4px;font-size:13px}
+  .pkg374PracticeCenter{display:grid;grid-template-columns:52px minmax(0,1fr);gap:6px}
+  .pkg374CurrentChar{min-width:0;width:52px;font-size:20px;padding:5px}
+  .pkg374ProgressText{font-size:11px}
+  .pkg374QuickTools{grid-column:1/-1}
+  .pkg374QuickTools button{font-size:12px;padding:6px 8px;min-height:35px}
+  .pkg374ModeSeg button{font-size:12px!important;padding:4px 7px!important;min-height:29px!important}
+}
+@media(max-height:700px) and (orientation:landscape) and (max-width:1100px){
+  .pkg374PracticeRail{padding:5px 7px;margin-top:5px}.pkg374NavBtn{min-height:38px}.pkg374QuickTools button{min-height:31px;padding:4px 8px}
+}
+</style>
+<script id="pkg374-practice-experience-js">
+(function(){
+  'use strict';
+  function q(id){return document.getElementById(id)}
+  function safeStore(k,v){try{localStorage.setItem(k,String(v))}catch(e){}}
+  function safeLoad(k,d){try{return localStorage.getItem(k)||d}catch(e){return d}}
+  function modeLabel(){return writeState.mode==='char'?'單字':writeState.mode==='sentence'?'句子':'全文'}
+  function progressInfo(){
+    if(writeState.mode==='char'){
+      var n=Math.max(1,poemCharsForWriting().length), i=Math.min(n,writeState.charIndex+1); return {i:i,n:n,p:i/n,text:'第 '+i+' / '+n+' 字'};
+    }
+    if(writeState.mode==='sentence'){
+      var n=Math.max(1,poemSentenceUnitsForWriting().length), i=Math.min(n,writeState.lineIndex+1); return {i:i,n:n,p:i/n,text:'第 '+i+' / '+n+' 句'};
+    }
+    var n=Math.max(1,poemLinesForWriting().length); return {i:n,n:n,p:1,text:'全文 '+n+' 段'};
+  }
+  function build(){
+    if(q('pkg374PracticeRail')||!q('writeBoard')) return;
+    var rail=document.createElement('div'); rail.id='pkg374PracticeRail'; rail.className='pkg374PracticeRail'; rail.setAttribute('aria-label','書法練習快捷操作');
+    rail.innerHTML='\
+      <button type="button" id="pkg374Prev" class="pkg374NavBtn" aria-label="上一個">← 上一個</button>\
+      <div class="pkg374PracticeCenter">\
+        <div id="pkg374Current" class="pkg374CurrentChar">書</div>\
+        <div class="pkg374ProgressWrap"><div class="pkg374ProgressText"><span id="pkg374ModeText">單字練習</span><span id="pkg374ProgressText">第 1 字</span></div><div class="pkg374Progress"><i id="pkg374ProgressBar"></i></div></div>\
+        <div class="pkg374QuickTools">\
+          <span class="pkg374ModeSeg" aria-label="練習模式"><button type="button" data-pkg374-mode="char">單字</button><button type="button" data-pkg374-mode="sentence">句子</button><button type="button" data-pkg374-mode="full">全文</button></span>\
+          <button type="button" data-pkg374-opacity="0.10">底字淡</button><button type="button" data-pkg374-opacity="0.18">標準</button><button type="button" data-pkg374-opacity="0.28">底字深</button>\
+          <button type="button" id="pkg374Paper">米字格</button><span class="pkg374DesktopOnlyHint">切下一個會自動清空上一個筆跡</span>\
+        </div>\
+      </div>\
+      <button type="button" id="pkg374Next" class="pkg374NavBtn next" aria-label="下一個">下一個 →</button>';
+    q('writeBoard').insertAdjacentElement('afterend',rail);
+    q('pkg374Prev').addEventListener('click',function(e){prevWriteUnit(e); sync()});
+    q('pkg374Next').addEventListener('click',function(e){nextWriteUnit(e); sync()});
+    rail.querySelectorAll('[data-pkg374-mode]').forEach(function(b){b.addEventListener('click',function(){setWriteMode(this.dataset.pkg374Mode);sync()})});
+    rail.querySelectorAll('[data-pkg374-opacity]').forEach(function(b){b.addEventListener('click',function(){setPkg374Opacity(Number(this.dataset.pkg374Opacity))})});
+    q('pkg374Paper').addEventListener('click',cyclePaper);
+    sync();
+  }
+  window.setPkg374Opacity=function(v){
+    v=Math.max(.08,Math.min(.34,Number(v)||.18)); setGuideOpacity(v); var r=q('guideOpacity'); if(r)r.value=String(v); safeStore('daofaGuideOpacity',v); sync();
+  };
+  var paperOrder=['mi','square','line','blank'];
+  var paperNames={mi:'米字格',square:'方格',line:'橫線',blank:'空白'};
+  function currentPaper(){return safeLoad('daofaWritingPaper','mi')}
+  function cyclePaper(){var cur=currentPaper(), idx=paperOrder.indexOf(cur); var n=paperOrder[(idx+1)%paperOrder.length]; if(typeof window.setPkg343Paper==='function')window.setPkg343Paper(n); else toggleGrid(n==='blank'?'off':'on'); safeStore('daofaWritingPaper',n); sync()}
+  function sync(){
+    if(!q('pkg374PracticeRail')) return;
+    var txt=''; try{txt=currentWriteText()}catch(e){}
+    q('pkg374Current').textContent=String(txt||'書').replace(/\s+/g,' ').slice(0,10);
+    var inf=progressInfo(); q('pkg374ProgressText').textContent=inf.text; q('pkg374ProgressBar').style.width=Math.round(inf.p*100)+'%'; q('pkg374ModeText').textContent=modeLabel()+'練習';
+    document.querySelectorAll('[data-pkg374-mode]').forEach(function(b){b.classList.toggle('on',b.dataset.pkg374Mode===writeState.mode)});
+    var ov=Number(getComputedStyle(document.documentElement).getPropertyValue('--guide-opacity'))||Number(q('guideOpacity')&&q('guideOpacity').value)||.18;
+    document.querySelectorAll('[data-pkg374-opacity]').forEach(function(b){b.classList.toggle('on',Math.abs(Number(b.dataset.pkg374Opacity)-ov)<.015)});
+    var paper=currentPaper(); if(q('pkg374Paper'))q('pkg374Paper').textContent=paperNames[paper]||'米字格';
+    var full=writeState.mode==='full'; q('pkg374Prev').disabled=full; q('pkg374Next').disabled=full; q('pkg374Prev').style.visibility=full?'hidden':'visible'; q('pkg374Next').style.visibility=full?'hidden':'visible';
+  }
+  function patch(name){
+    var old=window[name]; if(typeof old!=='function')return;
+    window[name]=function(){var r=old.apply(this,arguments); requestAnimationFrame(sync); return r}; try{globalThis[name]=window[name]}catch(e){}
+  }
+  function restorePrefs(){
+    var ov=Number(safeLoad('daofaGuideOpacity','0.18')); if(ov>=.08&&ov<=.34){setGuideOpacity(ov);var r=q('guideOpacity');if(r)r.value=String(ov)}
+    var paper=currentPaper(); if(typeof window.setPkg343Paper==='function')window.setPkg343Paper(paper);
+  }
+  function init374(){build();restorePrefs();['renderWritingGuide','setWriteMode','selectPoemByIndex'].forEach(patch);window.addEventListener('resize',function(){requestAnimationFrame(sync)},{passive:true});document.addEventListener('fullscreenchange',function(){setTimeout(sync,60)});sync()}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init374,0)});else setTimeout(init374,0);
+})();
+</script>
 </body>
 </html>

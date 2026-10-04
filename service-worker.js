@@ -1,4 +1,4 @@
-/* 胖超詩詞閱讀書寫系統｜PKG373 Service Worker kill switch
+/* 胖超詩詞閱讀書寫系統｜PKG374 Service Worker kill switch
    目的：解除舊版 PWA 快取干擾，避免手機持續讀到舊版書寫頁。 */
 self.addEventListener('install', event => { self.skipWaiting(); });
 self.addEventListener('activate', event => {
