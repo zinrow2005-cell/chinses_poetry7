@@ -232,10 +232,23 @@ label{font-size:var(--daofa-label-size,12px) !important;}
 }
 .writeBoard.pkg373-pen-active{box-shadow:inset 0 0 0 2px rgba(141,70,15,.16),0 18px 60px rgba(68,37,12,.10);}
 
-.traceQuickGrid{grid-template-columns:repeat(4,minmax(0,1fr))!important;}
-.traceQuickGrid button{min-height:44px;white-space:nowrap;}
+.traceCurrentRow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid #ead6bd;background:#fffaf2;border-radius:14px;margin:8px 0 10px;}
+.traceCurrentRow .tag{font-size:12px;font-weight:900;color:#7a522d;white-space:nowrap;}
+.traceCurrentRow b{font-size:15px;color:#3a2518;line-height:1.35;text-align:right;}
+.traceQuickBox{padding:12px!important;}
+.traceQuickGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;}
+.traceQuickGrid button{min-height:56px;white-space:normal!important;line-height:1.22!important;font-size:15px!important;padding:10px 8px!important;display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important;word-break:keep-all;border-radius:14px!important;}
 .traceQuickGrid button.active{background:linear-gradient(180deg,#b86b27,#8d460f)!important;color:#fff!important;border-color:#9c4b12!important;box-shadow:0 8px 18px rgba(126,70,24,.18)!important;}
-@media(max-width:760px){.traceQuickGrid{grid-template-columns:1fr 1fr!important;}}
+.traceQuickHint{font-size:12px;color:#80634b;line-height:1.65;margin-top:8px;}
+.fontAdvanced{margin-top:10px;border:1px solid #ead6bd;background:#fffdf8;border-radius:16px;overflow:hidden;}
+.fontAdvanced summary{list-style:none;cursor:pointer;padding:12px 14px;font-weight:900;color:#6e390f;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.fontAdvanced summary::-webkit-details-marker{display:none;}
+.fontAdvanced summary::after{content:"展開";font-size:12px;color:#8b5a2f;background:#fff7ea;border:1px solid #e5cfad;border-radius:999px;padding:3px 10px;}
+.fontAdvanced[open] summary::after{content:"收起";}
+.fontAdvancedBody{padding:0 12px 12px;display:grid;gap:10px;}
+.fontAdvancedBody .smallNote{margin:0;}
+@media(max-width:760px){.traceQuickGrid{grid-template-columns:1fr 1fr!important;}.traceCurrentRow{align-items:flex-start;}.traceCurrentRow b{text-align:left;}}
+@media(max-width:380px){.traceQuickGrid{grid-template-columns:1fr!important;}}
 </style>
 
 <script>
@@ -483,42 +496,46 @@ body.pkg345-writing-fullscreen .pkg346Bar{display:none!important;}
       </div>
       <div class="panel">
         <h3>臨摹底字與筆刷</h3>
-        <label>臨摹底字字型</label>
-        <select id="traceFont" onchange="changeTraceFont(this.value)">
-          <option value='"DFKai-SB","BiauKai","KaiTi","STKaiti","Noto Serif TC","PMingLiU",serif'>楷書／標楷體</option>
-          <option value='"DaofaMasaRegular","DFKai-SB","BiauKai","KaiTi",serif'>正風毛筆</option>
-          <option value='"DaofaChenYuThin","DFKai-SB","BiauKai","KaiTi",serif'>辰宇落雁</option>
-          <option value='"DaofaQingSong5","DFKai-SB","BiauKai","KaiTi",serif'>清松手寫</option>
-        </select>
-        <div class="fontManager">
-          <div class="smallNote">可新增 .ttf、.otf、.woff、.woff2，也可直接選擇 ZIP 匯入；系統會自動從 ZIP 中挑出可用字型。字型保存在目前瀏覽器的 IndexedDB，不需要金鑰；換電腦或清除網站資料後需重新上傳。</div>
-          <div class="presetFontBox traceQuickBox">
-            <h4>一鍵切換臨摹字體</h4>
-            <div class="presetFontGrid traceQuickGrid">
-              <button type="button" data-trace-quick="kai" onclick="applyQuickTraceFont('kai')">楷書</button>
-              <button type="button" data-trace-quick="masa" onclick="applyQuickTraceFont('masa')">正風毛筆</button>
-              <button type="button" data-trace-quick="chenyu" onclick="applyQuickTraceFont('chenyu')">辰宇落雁</button>
-              <button type="button" data-trace-quick="qingsong" onclick="applyQuickTraceFont('qingsong')">清松手寫</button>
-            </div>
-            <div class="presetFontTip">平常練字直接點四個按鈕即可；上方下拉選單仍保留正風粗細與辰宇等寬等進階選擇。</div>
+        <div class="traceCurrentRow"><span class="tag">目前臨摹字型</span><b id="traceCurrentName">楷書／標楷體</b></div>
+        <div class="presetFontBox traceQuickBox">
+          <h4>一鍵切換臨摹字體</h4>
+          <div class="presetFontGrid traceQuickGrid">
+            <button type="button" data-trace-quick="kai" onclick="applyQuickTraceFont('kai')">楷書</button>
+            <button type="button" data-trace-quick="masa" onclick="applyQuickTraceFont('masa')">正風毛筆</button>
+            <button type="button" data-trace-quick="chenyu" onclick="applyQuickTraceFont('chenyu')">辰宇落雁</button>
+            <button type="button" data-trace-quick="qingsong" onclick="applyQuickTraceFont('qingsong')">清松手寫</button>
           </div>
-          <div class="fontSlotRow">
-            <select id="fontSlot" onchange="handleFontSlotChange(this.value)">
-              <option value="custom">一般自訂字型</option>
-              <option value="zhengfeng">正風毛筆</option>
-              <option value="chenyu">辰宇落雁</option>
-            </select>
-            <input id="customFontName" placeholder="自訂字型名稱，例如：我的楷書"/>
-          </div>
-          <div class="miniRow">
-            <input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2,.zip,font/ttf,font/otf,font/woff,font/woff2,application/zip,application/x-zip-compressed"/>
-          </div>
-          <div class="fontActions">
-            <button type="button" onclick="addCustomTraceFont()">新增字型</button>
-            <button type="button" onclick="loadCustomTraceFonts(true)">重新載入字型</button>
-          </div>
-          <div id="customFontList" class="fontList"></div>
+          <div class="traceQuickHint">平常練字直接點上面四個按鈕即可。</div>
         </div>
+        <details class="fontAdvanced">
+          <summary>進階字型與自訂上傳</summary>
+          <div class="fontAdvancedBody">
+            <label>進階選擇／自訂字型</label>
+            <select id="traceFont" onchange="changeTraceFont(this.value)">
+              <option value='"DFKai-SB","BiauKai","KaiTi","STKaiti","Noto Serif TC","PMingLiU",serif'>楷書／標楷體</option>
+              <option value='"DaofaMasaRegular","DFKai-SB","BiauKai","KaiTi",serif'>正風毛筆</option>
+              <option value='"DaofaChenYuThin","DFKai-SB","BiauKai","KaiTi",serif'>辰宇落雁</option>
+              <option value='"DaofaQingSong5","DFKai-SB","BiauKai","KaiTi",serif'>清松手寫</option>
+            </select>
+            <div class="smallNote">只有在要自訂其他字型時，再打開這個區塊即可。</div>
+            <div class="fontSlotRow">
+              <select id="fontSlot" onchange="handleFontSlotChange(this.value)">
+                <option value="custom">一般自訂字型</option>
+                <option value="zhengfeng">正風毛筆</option>
+                <option value="chenyu">辰宇落雁</option>
+              </select>
+              <input id="customFontName" placeholder="自訂字型名稱，例如：我的楷書"/>
+            </div>
+            <div class="miniRow">
+              <input id="fontFile" type="file" accept=".ttf,.otf,.woff,.woff2,.zip,font/ttf,font/otf,font/woff,font/woff2,application/zip,application/x-zip-compressed"/>
+            </div>
+            <div class="fontActions">
+              <button type="button" onclick="addCustomTraceFont()">新增字型</button>
+              <button type="button" onclick="loadCustomTraceFonts(true)">重新載入字型</button>
+            </div>
+            <div id="customFontList" class="fontList"></div>
+          </div>
+        </details>
         <div class="two">
           <div><label>筆畫粗細</label><select id="brushSize" onchange="syncToolbarBrushSize(this.value)"><option value="5">細</option><option value="8" selected>標準</option><option value="12">粗</option><option value="18">特粗</option><option value="26">超大</option></select></div>
           <div><label>格線</label><select id="gridSelect" onchange="toggleGrid(this.value)"><option value="on" selected>顯示</option><option value="off">隱藏</option></select></div>
@@ -104421,8 +104438,9 @@ function init(){
   setupWritingCanvas(true);
   bindWritingControls();
   initWritingTools();
-  loadCustomTraceFonts().catch(err=>{console.warn('custom font load failed',err); renderCustomFontList('自訂字型載入失敗，可重新載入或重新上傳。');});
+  loadCustomTraceFonts().catch(err=>{console.warn('custom font load failed',err); renderCustomFontList('自訂字型載入失敗，可重新載入或重新上傳。'); updateTraceCurrentName(writeState.font);});
   syncQuickTraceButtons(writeState.font);
+  updateTraceCurrentName(writeState.font);
   window.addEventListener('resize',()=>{updateFullWritingBoardHeight(); setupWritingCanvas(true);});
 }
 function bindWritingControls(){
@@ -104694,7 +104712,7 @@ async function fontDBAll(){const db=await openFontDB();return await new Promise(
 async function fontDBPut(record){const db=await openFontDB();return await new Promise((resolve,reject)=>{const tx=db.transaction('fonts','readwrite');tx.objectStore('fonts').put(record);tx.oncomplete=()=>{db.close();resolve(true);};tx.onerror=()=>{db.close();reject(tx.error);};});}
 async function fontDBDelete(id){const db=await openFontDB();return await new Promise((resolve,reject)=>{const tx=db.transaction('fonts','readwrite');tx.objectStore('fonts').delete(id);tx.oncomplete=()=>{db.close();resolve(true);};tx.onerror=()=>{db.close();reject(tx.error);};});}
 async function registerCustomFont(record){const family=customFontFamily(record.id);try{const blob=new Blob([record.buffer],{type:record.mime||'font/ttf'});const url=URL.createObjectURL(blob);const face=new FontFace(family,`url(${url})`);await face.load();document.fonts.add(face);return {...record,family,value:customFontValue(record.id),loaded:true,url};}catch(err){console.warn('font register failed',record.name,err);return {...record,family,value:customFontValue(record.id),loaded:false,error:String(err&&err.message||err)};}}
-function refreshTraceFontOptions(){const sel=$('traceFont');if(!sel)return;const current=sel.value||writeState.font||DEFAULT_KAI_FONT;Array.from(sel.querySelectorAll('option[data-custom-font="1"]')).forEach(o=>o.remove());customTraceFonts.forEach(f=>{const opt=document.createElement('option');opt.dataset.customFont='1';opt.value=f.value;opt.textContent=(f.loaded?'自訂｜':'自訂未載入｜')+(f.name||f.fileName||'未命名字型');sel.appendChild(opt);});if(Array.from(sel.options).some(o=>o.value===current)){sel.value=current;writeState.font=current;}}
+function refreshTraceFontOptions(){const sel=$('traceFont');if(!sel)return;const current=sel.value||writeState.font||DEFAULT_KAI_FONT;Array.from(sel.querySelectorAll('option[data-custom-font="1"]')).forEach(o=>o.remove());customTraceFonts.forEach(f=>{const opt=document.createElement('option');opt.dataset.customFont='1';opt.value=f.value;opt.textContent=(f.loaded?'自訂｜':'自訂未載入｜')+(f.name||f.fileName||'未命名字型');sel.appendChild(opt);});if(Array.from(sel.options).some(o=>o.value===current)){sel.value=current;writeState.font=current;} updateTraceCurrentName(writeState.font);}
 function renderCustomFontList(message){const list=$('customFontList');if(!list)return;if(message){list.innerHTML=`<div class="smallNote">${escapeHtml(message)}</div>`;return;}if(!customTraceFonts.length){list.innerHTML='<div class="smallNote">尚未新增自訂字型。</div>';return;}list.innerHTML=customTraceFonts.map(f=>`<div class="fontItem"><div><b>${escapeHtml(f.name||f.fileName||'未命名字型')}</b><br><span>${escapeHtml(f.fileName||'')} ${f.slot?'｜固定字型槽':''} ${f.loaded?'｜已載入':'｜載入失敗'}</span></div><button type="button" onclick="deleteCustomTraceFont('${escapeHtml(f.id)}')">刪除</button></div>`).join('');}
 async function loadCustomTraceFonts(manual=false){try{const saved=localStorage.getItem('daofaTraceFontValue')||'';const records=await fontDBAll();customTraceFonts=[];for(const record of records){customTraceFonts.push(await registerCustomFont(record));}refreshTraceFontOptions();if(saved&&Array.from(($('traceFont')||{options:[]}).options).some(o=>o.value===saved)){writeState.font=saved;$('traceFont').value=saved;}renderCustomFontList();renderWritingGuide();if(manual)setWriteStatus(`自訂字型已重新載入：${customTraceFonts.length} 個`);}catch(err){console.error(err);renderCustomFontList(err.message||'自訂字型載入失敗');if(manual)setWriteStatus(err.message||'自訂字型載入失敗');}}
 async function addCustomTraceFont(){
@@ -104734,7 +104752,8 @@ async function addCustomTraceFont(){
 }
 async function deleteCustomTraceFont(id){const target=customTraceFonts.find(f=>f.id===id);try{await fontDBDelete(id);if(writeState.font===customFontValue(id)){writeState.font=DEFAULT_KAI_FONT;try{localStorage.setItem('daofaTraceFontValue',DEFAULT_KAI_FONT);}catch(e){}}await loadCustomTraceFonts();const sel=$('traceFont');if(sel)sel.value=writeState.font;renderWritingGuide();setWriteStatus(`已刪除自訂字型：${target?.name||''}`);}catch(err){console.error(err);setWriteStatus(err.message||'刪除字型失敗');}}
 
-function changeTraceFont(font){writeState.font=font||DEFAULT_KAI_FONT;try{localStorage.setItem('daofaTraceFontValue',writeState.font);}catch(e){}renderWritingGuide();syncQuickTraceButtons(writeState.font);let msg='臨摹底字字型已切換';if(writeState.font.includes('DaofaUserFont_preset_zhengfeng')&&!presetFontLoaded('zhengfeng'))msg='已選正風毛筆；尚未匯入時會先以楷書代替，請在字型管理匯入。';if(writeState.font.includes('DaofaUserFont_preset_chenyu')&&!presetFontLoaded('chenyu'))msg='已選辰宇落雁；尚未匯入時會先以楷書代替，請在字型管理匯入。';setWriteStatus(msg);}
+function updateTraceCurrentName(v){const el=$('traceCurrentName'); if(!el) return; const sel=$('traceFont'); let name='楷書／標楷體'; if(sel){const opt=Array.from(sel.options).find(o=>o.value===v); if(opt&&opt.textContent) name=opt.textContent.trim();} el.textContent=name;}
+function changeTraceFont(font){writeState.font=font||DEFAULT_KAI_FONT;try{localStorage.setItem('daofaTraceFontValue',writeState.font);}catch(e){}renderWritingGuide();syncQuickTraceButtons(writeState.font);updateTraceCurrentName(writeState.font);let msg='臨摹底字字型已切換';if(writeState.font.includes('DaofaUserFont_preset_zhengfeng')&&!presetFontLoaded('zhengfeng'))msg='已選正風毛筆；尚未匯入時會先以楷書代替，請在字型管理匯入。';if(writeState.font.includes('DaofaUserFont_preset_chenyu')&&!presetFontLoaded('chenyu'))msg='已選辰宇落雁；尚未匯入時會先以楷書代替，請在字型管理匯入。';setWriteStatus(msg);}
 function setGuideOpacity(v){document.documentElement.style.setProperty('--guide-opacity',v); $('opacityVal').textContent=Number(v).toFixed(2);}
 function toggleGrid(v){$('writeBoard').classList.toggle('grid',v==='on');}
 function setWriteStatus(text){$('writeStatus').textContent=text||'書寫板待命';}
@@ -104764,7 +104783,7 @@ const QUICK_TRACE_FONTS={
 function quickTraceKeyForValue(v){v=String(v||'');if(v.includes('DaofaMasa'))return 'masa';if(v.includes('DaofaChenYu'))return 'chenyu';if(v.includes('DaofaQingSong5'))return 'qingsong';return 'kai';}
 function syncQuickTraceButtons(v){const key=quickTraceKeyForValue(v||writeState.font);document.querySelectorAll('[data-trace-quick]').forEach(b=>b.classList.toggle('active',b.dataset.traceQuick===key));}
 function applyQuickTraceFont(key){const value=QUICK_TRACE_FONTS[key]||DEFAULT_KAI_FONT;const sel=$('traceFont');if(sel&&Array.from(sel.options).some(o=>o.value===value))sel.value=value;changeTraceFont(value);syncQuickTraceButtons(value);}
-document.addEventListener('daofa-fonts-ready',()=>{renderWritingGuide();syncQuickTraceButtons(writeState.font);});
+document.addEventListener('daofa-fonts-ready',()=>{renderWritingGuide();syncQuickTraceButtons(writeState.font);updateTraceCurrentName(writeState.font);});
 
 function writingPaletteColors(){return ['#23140b','#000000','#5b2a13','#8d460f','#b86b27','#7a1f16','#1f3a2d','#1f4d6b','#4a3a7a','#ffffff','#d8c1a0','#f3dfc2'];}
 function renderPaletteGrid(){
