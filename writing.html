@@ -107732,3 +107732,90 @@ body.pkg345-writing-fullscreen #pkg343FloatingMini{display:none!important;}
 
 </body>
 </html>
+
+<style id="pkg384-fullscreen-mini-tools-css">
+/* PKG384｜全螢幕工具列極簡小圖示化 */
+body.pkg345-writing-fullscreen #pkg345FsTools,
+body.pkg345-writing-fullscreen #pkg347FsTools,
+body.pkg345-writing-fullscreen #pkg346FsZoom,
+body.pkg345-writing-fullscreen #pkg343FloatingMini,
+body.pkg345-writing-fullscreen .pkg330FloatingExit,
+body.pkg345-writing-fullscreen .boardCard.pkg333FullscreenHost .writeToolbar{display:none!important;}
+.pkg384FsMini{display:none;position:fixed;top:calc(6px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:2147483640;font-family:var(--font-kai,"DFKai-SB","BiauKai",serif);user-select:none;-webkit-user-select:none;pointer-events:auto;}
+body.pkg345-writing-fullscreen .pkg384FsMini{display:block;}
+.pkg384FsBar{display:flex;align-items:center;gap:6px;padding:6px;border:1px solid rgba(220,189,148,.96);border-radius:18px;background:rgba(255,250,242,.95);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 12px 34px rgba(48,28,12,.18);white-space:nowrap;}
+.pkg384IconBtn{width:38px;height:38px;min-width:38px!important;padding:0!important;display:grid!important;place-items:center!important;border:1px solid #ddc19a!important;border-radius:12px!important;background:#fffaf2!important;color:#5d3414!important;cursor:pointer;line-height:1!important;box-shadow:none!important;}
+.pkg384IconBtn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
+.pkg384IconBtn.active,.pkg384IconBtn:hover{background:linear-gradient(180deg,#6b3a18,#3d210d)!important;color:#fff!important;border-color:#5c2e0f!important;transform:none!important;}
+.pkg384Sep{width:1px;height:26px;background:#dec19a;margin:0 1px;flex:0 0 1px;}
+.pkg384Panel{display:none;position:absolute;top:50px;left:50%;transform:translateX(-50%);min-width:min(580px,calc(100vw - 20px));max-width:calc(100vw - 20px);padding:10px;border:1px solid rgba(220,189,148,.96);border-radius:18px;background:rgba(255,250,242,.98);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 20px 58px rgba(48,28,12,.24);}
+.pkg384Panel.show{display:block;}
+.pkg384PanelRow{display:flex;align-items:center;justify-content:center;gap:7px;flex-wrap:wrap;}
+.pkg384Panel button,.pkg384Panel select,.pkg384Panel input{font-family:inherit;min-height:36px;border:1px solid #ddc19a;background:#fffaf2;color:#5d3414;border-radius:999px;padding:7px 11px;font-weight:900;}
+.pkg384Panel .pkg343ColorBtn{width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important;padding:0!important;border-radius:50%!important;background:var(--swatch)!important;border:3px solid #fff!important;box-shadow:0 0 0 1px #d5b894!important;}
+.pkg384Panel .pkg343PenBtn{display:inline-flex!important;align-items:center!important;gap:6px!important;}
+.pkg384Panel .pkg343PenNib{width:21px!important;height:21px!important;}
+.pkg384Panel .pkg343SizeDot{display:inline-block;border-radius:50%;background:currentColor;vertical-align:middle;}
+body.pkg345-writing-fullscreen .boardCard.pkg333FullscreenHost .writeBoard.fullscreenWriting{top:54px!important;height:calc(100dvh - 54px)!important;min-height:calc(100dvh - 54px)!important;bottom:0!important;}
+body.pkg345-writing-fullscreen .boardCard.pkg333FullscreenHost .writeBoard.fullscreenWriting .writeGuide{inset:20px 26px 26px!important;}
+@media(max-width:700px){
+ .pkg384FsMini{top:calc(4px + env(safe-area-inset-top));max-width:calc(100vw - 8px);}
+ .pkg384FsBar{gap:4px;padding:4px;border-radius:15px;overflow-x:auto;max-width:calc(100vw - 8px);scrollbar-width:none;}
+ .pkg384FsBar::-webkit-scrollbar{display:none;}
+ .pkg384IconBtn{width:36px;height:36px;min-width:36px!important;border-radius:11px!important;}
+ .pkg384IconBtn svg{width:18px;height:18px;}
+ .pkg384Panel{top:46px;min-width:calc(100vw - 12px);max-width:calc(100vw - 12px);padding:8px;}
+ body.pkg345-writing-fullscreen .boardCard.pkg333FullscreenHost .writeBoard.fullscreenWriting{top:48px!important;height:calc(100dvh - 48px)!important;min-height:calc(100dvh - 48px)!important;}
+}
+</style>
+<script id="pkg384-fullscreen-mini-tools-js">
+(function(){
+ const $=id=>document.getElementById(id);
+ const COLORS=['#23140b','#000000','#5b2a13','#8d460f','#7a1f16','#1f3a2d','#1f4d6b','#ffffff','#c92626','#f4c9c9'];
+ const PRESETS=[['brush','柔順毛筆'],['ink','濃墨筆'],['pen','硬筆'],['pencil','鉛筆'],['dry','乾筆飛白'],['eraser','橡皮擦']];
+ const SIZES=[3,5,8,12,18,26,34];
+ const icon={
+  exit:'<svg viewBox="0 0 24 24"><path d="M9 5l-7 7 7 7"/><path d="M2 12h14"/><path d="M14 5h7v14h-7"/></svg>',
+  prev:'<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
+  next:'<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>',
+  undo:'<svg viewBox="0 0 24 24"><path d="M9 7H4v5"/><path d="M4 12c2.2-4 6.4-6 10.6-4.8 3.4 1 5.7 4 5.4 7.5-.3 3.7-3.4 6.3-7 6.3"/></svg>',
+  clear:'<svg viewBox="0 0 24 24"><path d="M3 17l8-8 6 6-6 6H7z"/><path d="M14 6l4-4 4 4-4 4"/></svg>',
+  brush:'<svg viewBox="0 0 24 24"><path d="M14 4l6 6"/><path d="M5 19c2.5.7 5-.1 6.6-1.8L19 9.8 14.2 5l-7.4 7.4C5.1 14 4.3 16.5 5 19z"/></svg>',
+  color:'<svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 100 18h1.2a1.8 1.8 0 001.3-3.1 1.8 1.8 0 011.3-3.1H18A3 3 0 0021 12a9 9 0 00-9-9z"/><circle cx="7.5" cy="10" r=".8"/><circle cx="10" cy="6.8" r=".8"/><circle cx="14" cy="6.8" r=".8"/></svg>',
+  grid:'<svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM12 4v16M4 12h16M4 4l16 16M20 4L4 20"/></svg>',
+  more:'<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>'
+ };
+ function btn(title,ico,action,extra=''){return `<button type="button" class="pkg384IconBtn ${extra}" title="${title}" aria-label="${title}" ${action}>${icon[ico]}</button>`;}
+ function build(){
+   if($('pkg384FsMini')) return;
+   const wrap=document.createElement('div');wrap.id='pkg384FsMini';wrap.className='pkg384FsMini';
+   const pens=PRESETS.map(([id,label])=>`<button type="button" class="pkg343PenBtn" onclick="setPkg343BrushPreset('${id}')">${label}</button>`).join('');
+   const sizes=SIZES.map(s=>`<button type="button" onclick="setPkg343Size('${s}')"><span class="pkg343SizeDot" style="width:${Math.max(5,Math.min(20,s))}px;height:${Math.max(5,Math.min(20,s))}px"></span></button>`).join('');
+   const colors=COLORS.map(c=>`<button type="button" class="pkg343ColorBtn" title="${c}" style="--swatch:${c}" onclick="setPkg343Color('${c}')"></button>`).join('');
+   wrap.innerHTML=`<div class="pkg384FsBar">
+     ${btn('離開全螢幕','exit','onclick="exitWritingFullscreen()"')}
+     ${btn('上一個','prev','onclick="prevWriteUnit(event)"')}
+     ${btn('下一個','next','onclick="nextWriteUnit(event)"')}
+     ${btn('復原','undo','onclick="undoLastStroke()"')}
+     ${btn('清除','clear','onclick="clearWritingCanvas()"')}
+     <span class="pkg384Sep"></span>
+     ${btn('筆刷與粗細','brush','onclick="pkg384ToggleFsPanel(\'pkg384BrushPanel\',this)"','pkg384PanelBtn')}
+     ${btn('顏色','color','onclick="pkg384ToggleFsPanel(\'pkg384ColorPanel\',this)"','pkg384PanelBtn')}
+     ${btn('格線','grid','onclick="pkg384ToggleFsPanel(\'pkg384GridPanel\',this)"','pkg384PanelBtn')}
+     ${btn('其他','more','onclick="pkg384ToggleFsPanel(\'pkg384MorePanel\',this)"','pkg384PanelBtn')}
+   </div>
+   <div id="pkg384BrushPanel" class="pkg384Panel"><div class="pkg384PanelRow">${pens}<span class="pkg384Sep"></span>${sizes}</div></div>
+   <div id="pkg384ColorPanel" class="pkg384Panel"><div class="pkg384PanelRow">${colors}<button type="button" onclick="togglePalettePanel()">更多調色盤</button></div></div>
+   <div id="pkg384GridPanel" class="pkg384Panel"><div class="pkg384PanelRow"><button type="button" onclick="setPkg343Paper('mi');pkg384CloseFsPanels()">米字格</button><button type="button" onclick="setPkg343Paper('square');pkg384CloseFsPanels()">方格</button><button type="button" onclick="setPkg343Paper('line');pkg384CloseFsPanels()">橫線</button><button type="button" onclick="setPkg343Paper('blank');pkg384CloseFsPanels()">空白</button></div></div>
+   <div id="pkg384MorePanel" class="pkg384Panel"><div class="pkg384PanelRow"><button type="button" onclick="pkg346ManualSave()">存檔</button><button type="button" onclick="pkg346RestoreDraft()">續寫</button><button type="button" onclick="pkg346ZoomOut()">縮小</button><button type="button" onclick="pkg346ResetView()">100%</button><button type="button" onclick="pkg346ZoomIn()">放大</button><button type="button" onclick="pkg346TogglePanMode()">拖曳</button><button type="button" onclick="calibrateWritingCanvas()">校正</button><button type="button" onclick="exportWritingPNG()">匯出 PNG</button></div></div>`;
+   (document.querySelector('.boardCard')||document.body).appendChild(wrap);
+ }
+ window.pkg384CloseFsPanels=function(){document.querySelectorAll('.pkg384Panel').forEach(p=>p.classList.remove('show'));document.querySelectorAll('.pkg384PanelBtn').forEach(b=>b.classList.remove('active'));};
+ window.pkg384ToggleFsPanel=function(id,b){const p=$(id);if(!p)return;const open=!p.classList.contains('show');pkg384CloseFsPanels();if(open){p.classList.add('show');b&&b.classList.add('active');}};
+ function sync(){build();const active=!!(document.fullscreenElement||$('writeBoard')?.classList.contains('fullscreenWriting')); if(!active) pkg384CloseFsPanels();}
+ document.addEventListener('click',e=>{if(!e.target.closest('#pkg384FsMini')&&document.body.classList.contains('pkg345-writing-fullscreen'))pkg384CloseFsPanels();});
+ document.addEventListener('fullscreenchange',()=>setTimeout(sync,30));
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',sync,{once:true});else sync();
+ setInterval(sync,900);
+})();
+</script>
