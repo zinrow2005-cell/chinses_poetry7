@@ -1,0 +1,11 @@
+PKG387｜iPad/手機跨裝置修正版
+
+修正：
+1. iPad（寬度 >= 740px）閱讀頁維持三欄主頁：左側選項、中間作品、右側教師導讀/閱讀內容。
+2. 只有手機寬度 < 740px 才進入 mobile mode。
+3. 修正舊版 <=1100px 強制手機模式造成 iPad 主頁消失。
+4. iPad 三欄使用壓縮欄寬與字級，兼顧直式/橫式。
+5. 修正 iPad Safari 臨摹底字 synthetic bold + text-shadow 導致的多重/重影外觀。
+6. 臨摹底字固定原始字重 400、font-synthesis:none、text-shadow:none。
+7. 字型載入與旋轉後只保留單一 writeGuide 並重新繪製一次。
+8. orientationchange/resize 後重新穩定 iPad 版面。

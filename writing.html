@@ -106466,7 +106466,7 @@ body.pkg345-writing-fullscreen.pkg347-tools-collapsed .boardCard.pkg333Fullscree
 
 <style id="pkg358-mobile-writing-repair-css">
 @media(max-width:900px){
-  .writeGuide{color:rgba(95,58,20,.34)!important;opacity:1!important;text-shadow:0 1px 0 rgba(255,255,255,.55);}
+  .writeGuide{color:rgba(95,58,20,.34)!important;opacity:1!important;text-shadow:none!important;font-weight:400!important;font-synthesis:none!important;-webkit-text-stroke:0 transparent!important;}
   #writingCanvas{display:block!important;pointer-events:auto!important;touch-action:none!important;background:transparent!important;}
   .writeBoard{background:#fffaf2!important;touch-action:none!important;}
   .boardHead h2{max-width:58vw!important;}
@@ -107877,3 +107877,45 @@ body.pkg345-writing-fullscreen .pkg384Panel{top:50px!important;}
  body.pkg345-writing-fullscreen .boardCard.pkg333FullscreenHost .writeBoard.fullscreenWriting{top:calc(98px + env(safe-area-inset-top))!important;height:calc(100dvh - 98px - env(safe-area-inset-top))!important;min-height:calc(100dvh - 98px - env(safe-area-inset-top))!important;}
 }
 </style>
+
+<style id="pkg387-ipad-writing-font-fix-css">
+/* PKG387｜iPad/Safari 臨摹字型避免 synthetic bold、陰影與多重輪廓 */
+.writeGuide,.focusText{
+  font-weight:400!important;font-synthesis:none!important;font-synthesis-weight:none!important;
+  text-shadow:none!important;-webkit-text-stroke-width:0!important;-webkit-text-stroke-color:transparent!important;
+  filter:none!important;mix-blend-mode:normal!important;backface-visibility:hidden;
+}
+.writeBoard[data-mode="char"] .writeGuide{letter-spacing:0!important;}
+@supports (-webkit-touch-callout:none){
+  .writeGuide,.focusText{-webkit-font-smoothing:antialiased!important;text-rendering:geometricPrecision!important;}
+}
+@media (min-width:740px) and (max-width:1180px){
+  .boardCard{min-width:0!important;}
+  .writeBoard{overflow:hidden!important;}
+  .writeGuide{transform-origin:center center!important;}
+}
+</style>
+<script id="pkg387-ipad-writing-font-fix-js">
+(function(){
+ function normalizeGuide(){
+   const board=document.getElementById('writeBoard'); if(!board)return;
+   const guides=board.querySelectorAll('#writeGuide,.writeGuide');
+   let keep=document.getElementById('writeGuide');
+   guides.forEach(g=>{if(keep&&g!==keep&&g.parentNode===board)g.remove();});
+   if(keep){
+     keep.style.setProperty('font-weight','400','important');
+     keep.style.setProperty('font-synthesis','none','important');
+     keep.style.setProperty('text-shadow','none','important');
+     keep.style.setProperty('-webkit-text-stroke-width','0','important');
+   }
+ }
+ function redrawOnce(){
+   normalizeGuide();
+   try{if(typeof renderWritingGuide==='function')renderWritingGuide();}catch(e){}
+   normalizeGuide();
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(redrawOnce,40),{once:true});else setTimeout(redrawOnce,40);
+ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>setTimeout(redrawOnce,30)).catch(()=>{});
+ window.addEventListener('orientationchange',()=>setTimeout(redrawOnce,220));
+})();
+</script>
