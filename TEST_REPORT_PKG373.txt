@@ -1,0 +1,23 @@
+胖超詩詞閱讀書寫系統｜PKG373 書寫手感專項測試報告
+日期：2026-10-04
+
+本版重點
+1. 最終書寫 Canvas 重新建立，移除歷代重複 pointer / pointerrawupdate 監聽，只保留單一 PointerEvent 管線。
+2. 使用 getCoalescedEvents 接收瀏覽器合併的高頻座標，避免同一筆被重複事件處理。
+3. Apple Pencil / pointerType=pen 出現後 1.2 秒內忽略 touch，降低手掌誤觸；第二指觸控不寫入。
+4. 復原由整張 Canvas 快照改成向量筆畫紀錄，最多保留 120 筆，顯著降低長時間書寫的記憶體累積。
+5. 手機粗指標裝置 Canvas DPR 上限調整為 2.25；在清晰度與記憶體/速度間平衡。
+6. 進入書寫時自動收起暫時設定面板，避免工具面板遮住書寫區。
+7. 全螢幕 API 被 iOS/Safari 拒絕時，自動改用 CSS 全螢幕備援。
+8. PWA orientation 由 portrait-primary 改為 any，iPad 可自由橫直式。
+9. 保留全站禁止誤觸全選、雙擊文字選取與長按選單防護。
+
+靜態驗證
+- index.html：JavaScript syntax OK，重複 ID 0
+- mobile.html：JavaScript syntax OK，重複 ID 0
+- reader.html：JavaScript syntax OK，重複 ID 0
+- writing.html：JavaScript syntax OK，重複 ID 0
+- manifest.webmanifest：JSON 可解析
+
+注意
+- 一般電容式觸控筆若瀏覽器仍回報 pointerType=touch，系統無法從硬體層分辨「筆」與「手掌」；Apple Pencil 或可回報 pen 的觸控筆可使用本版的自動防手掌誤觸。

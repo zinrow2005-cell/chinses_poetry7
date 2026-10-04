@@ -1,17 +1,17 @@
 {
-  "name": "胖超詩詞閱讀書寫系統 PKG369",
+  "name": "胖超詩詞閱讀書寫系統 PKG373",
   "short_name": "胖超詩詞書寫",
-  "description": "PKG369 書寫頁返回閱讀頁修正版：修正手機/平板書寫頁底部離開按鈕無反應，保留順滑書寫與 APP 圖示。",
+  "description": "PKG373 書寫手感專項版：單一書寫事件管線、觸控筆防手掌誤觸、輕量向量復原、跨裝置橫直式自由切換。",
   "lang": "zh-Hant-TW",
-  "start_url": "./mobile.html?source=pwa&pkg=369",
+  "start_url": "./mobile.html?source=pwa&pkg=373",
   "scope": "./",
-  "id": "./pangchao-poetry-writing-pwa-pkg369",
+  "id": "./pangchao-poetry-writing-pwa-pkg373",
   "display": "standalone",
   "display_override": [
     "standalone",
     "fullscreen"
   ],
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "background_color": "#efe2cb",
   "theme_color": "#6f3510",
   "categories": [
@@ -49,7 +49,7 @@
       "name": "開始閱讀",
       "short_name": "閱讀",
       "description": "開啟詩詞閱讀主畫面",
-      "url": "./reader.html?source=shortcut-read&view=mobile&open=library&pkg=369",
+      "url": "./reader.html?source=shortcut-read&view=mobile&open=library&pkg=373",
       "icons": [
         {
           "src": "./icons/icon-192.png",
@@ -61,7 +61,7 @@
       "name": "書寫練習",
       "short_name": "書寫",
       "description": "直接開啟臨帖書寫頁",
-      "url": "./writing.html?source=shortcut-writing&pkg=369",
+      "url": "./writing.html?source=shortcut-writing&pkg=373",
       "icons": [
         {
           "src": "./icons/icon-192.png",

@@ -212,6 +212,14 @@ label{font-size:var(--daofa-label-size,12px) !important;}
 .boardCard.pkg333FullscreenHost .toolbarRow.primaryTools button.on{background:linear-gradient(180deg,#b86b27,#8d460f)!important;color:#fff!important;border-color:#9c4b12!important;}
 .boardCard.pkg333FullscreenHost .writeBoard.fullscreenWriting{top:112px!important;height:calc(100vh - 112px)!important;min-height:calc(100vh - 112px)!important;}
 @media(max-width:760px){.boardCard.pkg333FullscreenHost .writeToolbar{min-height:124px!important;max-height:146px!important}.boardCard.pkg333FullscreenHost .writeBoard.fullscreenWriting{top:124px!important;height:calc(100vh - 124px)!important;min-height:calc(100vh - 124px)!important}.toolbarRow{gap:6px}}
+
+/* PKG373｜書寫手感：降低觸控延遲、避免誤觸與高頻按鈕動畫 */
+@media (pointer:coarse){
+  #writingCanvas{cursor:none!important;}
+  .writeToolbar button,.pkg343Dock button{transition:background-color .12s ease,border-color .12s ease,opacity .12s ease!important;}
+  .writeToolbar button:hover,.pkg343Dock button:hover{transform:none!important;}
+}
+.writeBoard.pkg373-pen-active{box-shadow:inset 0 0 0 2px rgba(141,70,15,.16),0 18px 60px rgba(68,37,12,.10);}
 </style>
 
 <script>
@@ -104373,7 +104381,7 @@ const POEMS = [
 ];
 const $=id=>document.getElementById(id);
 const DEFAULT_KAI_FONT='"DFKai-SB","BiauKai","KaiTi","STKaiti","Noto Serif TC","PMingLiU",serif';
-const writeState={selected:0,mode:'char',charIndex:0,lineIndex:0,font:DEFAULT_KAI_FONT,drawing:false,lastX:0,lastY:0,lastPoint:null,prevPoint:null,lastWidth:8,lastPressure:0.65,lastTime:0,pointerId:null,focusWriting:true,strokeHistory:[],strokeLimit:24,currentSnapshot:null,tool:'brush',brushType:'calligraphy',brushOpacity:1,inkColor:'#23140b',smoothBrush:true,minDistance:0.32};
+const writeState={selected:0,mode:'char',charIndex:0,lineIndex:0,font:DEFAULT_KAI_FONT,drawing:false,lastX:0,lastY:0,lastPoint:null,prevPoint:null,lastWidth:8,lastPressure:0.65,lastTime:0,pointerId:null,focusWriting:true,strokeHistory:[],strokeLimit:12,currentSnapshot:null,strokeRecords:[],strokeRecordLimit:120,currentStroke:null,isReplaying:false,lastPenAt:0,tool:'brush',brushType:'calligraphy',brushOpacity:1,inkColor:'#23140b',smoothBrush:true,minDistance:0.32};
 window.writeState=writeState;
 const PRESET_FONT_SLOTS={
   zhengfeng:{id:'preset_zhengfeng',name:'正風毛筆',prefer:[/MasaFont-Regular\.woff2$/i,/MasaFont-Regular\.woff$/i,/MasaFont-Regular\.ttf$/i,/MasaFont-Medium\.woff2$/i,/MasaFont-Medium\.ttf$/i,/MasaFont-Bold\.woff2$/i,/MasaFont-Bold\.ttf$/i,/MasaFont/i,/正風|毛筆/i]},
@@ -104843,8 +104851,8 @@ function setupWritingCanvas(force=false){
   if(canvas.dataset.bound==='1'&&!force) return;
   if(canvas.dataset.bound!=='1'){
     canvas.addEventListener('pointerdown',writingPointerDown,{passive:false});
+    // pointermove + getCoalescedEvents 已足夠精細；避免同時監聽 pointerrawupdate 造成同一段筆跡重複處理。
     canvas.addEventListener('pointermove',writingPointerMove,{passive:false});
-    if('onpointerrawupdate' in window) canvas.addEventListener('pointerrawupdate',writingPointerMove,{passive:false});
     canvas.addEventListener('pointerup',writingPointerUp,{passive:false});
     canvas.addEventListener('pointerleave',writingPointerUp,{passive:false});
     canvas.addEventListener('pointercancel',writingPointerUp,{passive:false});
@@ -104859,7 +104867,7 @@ function setupWritingCanvas(force=false){
 function resizeWritingCanvas(preserve=false){
   const canvas=$('writingCanvas'); if(!canvas) return; const rect=canvas.getBoundingClientRect();
   const cssW=Math.max(1,rect.width), cssH=Math.max(1,rect.height);
-  const dpr=Math.max(1,Math.min(window.devicePixelRatio||1,3));
+  const dpr=Math.max(1,Math.min(window.devicePixelRatio||1,(window.matchMedia('(pointer:coarse)').matches?2.25:3)));
   const w=Math.max(1,Math.round(cssW*dpr)); const h=Math.max(1,Math.round(cssH*dpr));
   let old=null;
   if(preserve && canvas.width && canvas.height && (canvas.width!==w||canvas.height!==h)){
@@ -104874,7 +104882,7 @@ function resizeWritingCanvas(preserve=false){
 function ensureWritingCanvasSize(preserve=true){
   const canvas=$('writingCanvas'); if(!canvas) return;
   const rect=canvas.getBoundingClientRect();
-  const dpr=Math.max(1,Math.min(window.devicePixelRatio||1,3));
+  const dpr=Math.max(1,Math.min(window.devicePixelRatio||1,(window.matchMedia('(pointer:coarse)').matches?2.25:3)));
   const w=Math.max(1,Math.round(Math.max(1,rect.width)*dpr));
   const h=Math.max(1,Math.round(Math.max(1,rect.height)*dpr));
   if(Math.abs((canvas.width||0)-w)>2 || Math.abs((canvas.height||0)-h)>2) resizeWritingCanvas(!!preserve);
@@ -104892,9 +104900,18 @@ function canvasPoint(evt){
 }
 function brushWidth(){return Number($('toolbarBrushSize')?.value||$('brushSize')?.value||8);}
 function pointerShouldWrite(evt){
-  // 專注書寫模式：副廠觸控筆常被瀏覽器回報為 touch，因此仍允許書寫，但完全阻止頁面捲動與全選。
+  if(!evt) return false;
+  // 多指觸控永遠不當成筆跡，避免縮放、手掌或第二根手指留下墨跡。
+  if(evt.pointerType==='touch' && evt.isPrimary===false) return false;
+  // Apple Pencil / 支援 PointerEvent 的觸控筆出現後，短時間忽略手指與手掌觸控。
+  if(evt.pointerType==='pen'){
+    writeState.lastPenAt=performance.now();
+    $('writeBoard')?.classList.add('pkg373-pen-active');
+    return true;
+  }
+  if(evt.pointerType==='touch' && writeState.lastPenAt && performance.now()-writeState.lastPenAt<1200) return false;
+  // 專注書寫模式仍允許被瀏覽器識別為 touch 的一般電容觸控筆。
   if(writeState.focusWriting) return true;
-  // 非專注模式：全文連續時手指保留上下捲動，只讓 pen/mouse 書寫。
   if(writeState.mode==='full' && evt.pointerType==='touch') return false;
   return true;
 }
@@ -104914,18 +104931,66 @@ function installPkg330WritingGuards(){
     setTimeout(()=>resizeWritingCanvas(true),80);
   });
 }
-function snapshotStroke(){
-  const canvas=$('writingCanvas'); if(!canvas) return null;
-  try{const snap=document.createElement('canvas'); snap.width=canvas.width; snap.height=canvas.height; snap.getContext('2d').drawImage(canvas,0,0); return snap;}catch(e){return null;}
+function normalizeWritingPoint(evt){
+  const p=canvasPoint(evt), canvas=$('writingCanvas');
+  const cssW=Number(canvas?.dataset.cssW)||Math.max(1,canvas?.getBoundingClientRect().width||1);
+  const cssH=Number(canvas?.dataset.cssH)||Math.max(1,canvas?.getBoundingClientRect().height||1);
+  return {x:p.x/cssW,y:p.y/cssH,pressure:pointerPressure(evt),t:Number(evt?.timeStamp)||performance.now(),pointerType:evt?.pointerType||'touch'};
 }
-function pushStrokeSnapshot(snap){
-  if(!snap) return; writeState.strokeHistory.push(snap);
-  while(writeState.strokeHistory.length>writeState.strokeLimit) writeState.strokeHistory.shift();
+function denormalizeWritingPoint(p){
+  const canvas=$('writingCanvas');
+  const cssW=Number(canvas?.dataset.cssW)||Math.max(1,canvas?.getBoundingClientRect().width||1);
+  const cssH=Number(canvas?.dataset.cssH)||Math.max(1,canvas?.getBoundingClientRect().height||1);
+  return {x:p.x*cssW,y:p.y*cssH,pressure:p.pressure,t:p.t,pointerType:p.pointerType};
+}
+function strokeEventFromPoint(p){
+  return {pressure:p.pressure,pointerType:p.pointerType||'pen',timeStamp:p.t||performance.now()};
+}
+function beginStrokeRecord(evt){
+  writeState.currentStroke={tool:writeState.tool,brushType:writeState.brushType,brushOpacity:writeState.brushOpacity,inkColor:writeState.inkColor,size:brushWidth(),points:[normalizeWritingPoint(evt)]};
+}
+function appendStrokeRecord(evt){
+  if(!writeState.currentStroke) return;
+  const p=normalizeWritingPoint(evt), pts=writeState.currentStroke.points, last=pts[pts.length-1];
+  if(last && Math.hypot(p.x-last.x,p.y-last.y)<0.00018) return;
+  pts.push(p);
+}
+function finishStrokeRecord(){
+  const st=writeState.currentStroke; writeState.currentStroke=null;
+  if(!st||!st.points?.length) return;
+  writeState.strokeRecords.push(st);
+  while(writeState.strokeRecords.length>writeState.strokeRecordLimit) writeState.strokeRecords.shift();
+}
+function replayWritingStrokes(){
+  const canvas=$('writingCanvas'); if(!canvas) return;
+  ensureWritingCanvasSize(false);
+  const ctx=canvas.getContext('2d');
+  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);ctx.restore();
+  const saved={tool:writeState.tool,brushType:writeState.brushType,brushOpacity:writeState.brushOpacity,inkColor:writeState.inkColor,lastWidth:writeState.lastWidth,lastPressure:writeState.lastPressure,lastTime:writeState.lastTime};
+  writeState.isReplaying=true;
+  try{
+    for(const st of writeState.strokeRecords){
+      if(!st.points?.length) continue;
+      writeState.tool=st.tool;writeState.brushType=st.brushType;writeState.brushOpacity=st.brushOpacity;writeState.inkColor=st.inkColor;
+      const first=denormalizeWritingPoint(st.points[0]), firstEvt=strokeEventFromPoint(first);
+      writeState.lastWidth=Number(st.size)||8; writeState.lastPressure=first.pressure||0.68; writeState.lastTime=first.t||0;
+      drawDot(ctx,first,writeState.lastWidth,firstEvt);
+      let from=first;
+      for(let i=1;i<st.points.length;i++){
+        const p=denormalizeWritingPoint(st.points[i]), ev=strokeEventFromPoint(p);
+        const dist=Math.hypot(p.x-from.x,p.y-from.y), dt=Math.max(1,(p.t||0)-(writeState.lastTime||((p.t||0)-16)));
+        const width=pressureWidth(Number(st.size)||8,ev,dist,dt);
+        strokeTo(ctx,from,p,width,ev); from=p; writeState.lastTime=p.t||writeState.lastTime;
+      }
+    }
+  }finally{
+    Object.assign(writeState,saved);writeState.isReplaying=false;updateWritingToolUI();
+  }
 }
 function undoLastStroke(){
-  const canvas=$('writingCanvas'); if(!canvas) return; const snap=writeState.strokeHistory.pop();
-  if(!snap){setWriteStatus('沒有可復原的筆畫'); return;}
-  const ctx=canvas.getContext('2d'); ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.drawImage(snap,0,0,canvas.width,canvas.height); ctx.restore(); ensureWritingCanvasSize(false);
+  if(writeState.drawing) return;
+  if(!writeState.strokeRecords.length){setWriteStatus('沒有可復原的筆畫'); return;}
+  writeState.strokeRecords.pop(); replayWritingStrokes();
   setWriteStatus('已復原上一筆畫');
 }
 function setWritingLock(on){document.documentElement.classList.toggle('daofa-writing-lock',!!on);document.body.classList.toggle('daofa-writing-lock',!!on);}
@@ -104940,13 +105005,14 @@ function enterWritingFullscreen(){
   setWritingLock(true);
   const host=board.closest('.boardCard')||board; host.classList.add('pkg333FullscreenHost');
   const req=host.requestFullscreen||host.webkitRequestFullscreen||host.msRequestFullscreen;
-  if(req){try{req.call(host);}catch(e){board.classList.add('fullscreenWriting');host.classList.add('pkg333FullscreenHost');$('pkg330FloatingExit')?.classList.add('show');}}else{board.classList.add('fullscreenWriting');host.classList.add('pkg333FullscreenHost');$('pkg330FloatingExit')?.classList.add('show');}
+  const cssFallback=()=>{board.classList.add('fullscreenWriting');host.classList.add('pkg333FullscreenHost');$('pkg330FloatingExit')?.classList.add('show');document.body.classList.add('pkg345-writing-fullscreen');setTimeout(()=>resizeWritingCanvas(true),80);};
+  if(req){try{const r=req.call(host);if(r&&typeof r.catch==='function')r.catch(cssFallback);}catch(e){cssFallback();}}else{cssFallback();}
   setTimeout(()=>resizeWritingCanvas(true),120); setWriteStatus('已進入全螢幕專注書寫');
 }
 function exitWritingFullscreen(){
   const board=$('writeBoard'); const exit=document.exitFullscreen||document.webkitExitFullscreen||document.msExitFullscreen;
   if(document.fullscreenElement&&exit){try{exit.call(document);}catch(e){}}
-  board?.classList.remove('fullscreenWriting'); (board?.closest('.boardCard'))?.classList.remove('pkg333FullscreenHost'); $('pkg330FloatingExit')?.classList.remove('show'); setWritingLock(false); setTimeout(()=>resizeWritingCanvas(true),80); setWriteStatus('已離開全螢幕書寫');
+  board?.classList.remove('fullscreenWriting'); (board?.closest('.boardCard'))?.classList.remove('pkg333FullscreenHost'); $('pkg330FloatingExit')?.classList.remove('show'); document.body.classList.remove('pkg345-writing-fullscreen'); setWritingLock(false); setTimeout(()=>resizeWritingCanvas(true),80); setWriteStatus('已離開全螢幕書寫');
 }
 function drawDot(ctx,p,width,evt){
   ctx.save();
@@ -104988,7 +105054,8 @@ function strokeTo(ctx,from,to,width,evt){
 function writingPointerDown(evt){
   if(!pointerShouldWrite(evt)){writeState.drawing=false;return;}
   evt.preventDefault(); setWritingLock(true); setupWritingCanvas(); ensureWritingCanvasSize(true);
-  writeState.currentSnapshot=snapshotStroke();
+  document.documentElement.classList.remove('pkg343-settings-open'); document.body.classList.remove('pkg343-settings-open');
+  beginStrokeRecord(evt);
   const canvas=$('writingCanvas'); const ctx=canvas.getContext('2d'); const p=canvasPoint(evt);
   try{canvas.setPointerCapture?.(evt.pointerId);}catch(e){}
   const pressure=pointerPressure(evt); const base=brushWidth();
@@ -105001,6 +105068,7 @@ function writingPointerMove(evt){
   evt.preventDefault(); const canvas=$('writingCanvas'); const ctx=canvas.getContext('2d');
   const events=(typeof evt.getCoalescedEvents==='function')?evt.getCoalescedEvents():[evt];
   for(const ev of events){
+    appendStrokeRecord(ev);
     const p=canvasPoint(ev); const now=ev.timeStamp||performance.now();
     const from=writeState.lastPoint||{x:writeState.lastX,y:writeState.lastY};
     const dist=Math.hypot(p.x-from.x,p.y-from.y); const dt=Math.max(1,now-(writeState.lastTime||now-16));
@@ -105013,7 +105081,7 @@ function writingPointerMove(evt){
 function writingPointerUp(evt){
   if(!writeState.drawing) return; if(pointerShouldWrite(evt)) evt.preventDefault();
   try{$('writingCanvas').releasePointerCapture?.(evt.pointerId);}catch(e){}
-  writeState.drawing=false; writeState.pointerId=null; writeState.lastPoint=null; writeState.prevPoint=null; pushStrokeSnapshot(writeState.currentSnapshot); writeState.currentSnapshot=null;
+  writeState.drawing=false; writeState.pointerId=null; writeState.lastPoint=null; writeState.prevPoint=null; finishStrokeRecord(); writeState.currentSnapshot=null;
   if(!document.fullscreenElement) setWritingLock(false);
   setWriteStatus(writeState.focusWriting?'順滑毛筆待命｜專注書寫：開':'順滑毛筆待命');
 }
@@ -105021,7 +105089,7 @@ function calibrateWritingCanvas(){resizeWritingCanvas(true);renderWritingGuide()
 function startTracePractice(){setupWritingCanvas(true); clearWritingCanvas(false); renderWritingGuide(); setWriteStatus('已開始臨摹｜座標精準模式啟用');}
 function clearWritingCanvas(show=true){
   const canvas=$('writingCanvas'); if(!canvas) return; const ctx=canvas.getContext('2d');
-  ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.restore(); writeState.strokeHistory=[]; writeState.currentSnapshot=null; resizeWritingCanvas(); if(show) setWriteStatus('本頁筆跡已清除');
+  ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,canvas.width,canvas.height); ctx.restore(); writeState.strokeHistory=[]; writeState.strokeRecords=[]; writeState.currentStroke=null; writeState.currentSnapshot=null; resizeWritingCanvas(); if(show) setWriteStatus('本頁筆跡已清除');
 }
 function drawGuideForExport(ctx,w,h){
   ctx.save(); ctx.fillStyle='rgba(95,58,20,0.18)'; ctx.textAlign='center'; ctx.textBaseline='middle';
@@ -107026,7 +107094,7 @@ body.pkg345-writing-fullscreen #pkg343FloatingMini{display:none!important;}
 </style>
 
 
-<!-- PKG372｜書寫流程精簡、工具列防遮擋 -->
+<!-- PKG373｜書寫流程精簡、工具列防遮擋 -->
 <style id="pkg372-writing-flow-css">
 :root{--pkg372-safe-top:env(safe-area-inset-top,0px);--pkg372-safe-bottom:env(safe-area-inset-bottom,0px)}
 @media(max-width:1100px),(hover:none) and (pointer:coarse){
@@ -107095,6 +107163,94 @@ body.pkg345-writing-fullscreen #pkg343FloatingMini{display:none!important;}
   document.addEventListener('DOMContentLoaded',function(){setTimeout(boot,20);});
   window.addEventListener('load',function(){setTimeout(boot,80);});
   var tm; window.addEventListener('resize',function(){clearTimeout(tm);tm=setTimeout(closeTransientOnRotate,180);});
+})();
+</script>
+
+
+<!-- PKG373｜最終書寫事件管線：單一 PointerEvent、Pencil 防手掌、向量復原 -->
+<script id="pkg373-final-writing-pipeline">
+(function(){
+  const VERSION='PKG373-final-pipeline-20261004';
+  const $=id=>document.getElementById(id);
+  let installed=false;
+  function safe(name,...args){try{const f=window[name];if(typeof f==='function')return f(...args);}catch(e){console.warn(VERSION,name,e)}}
+  function closeSheets(){
+    document.documentElement.classList.remove('pkg343-settings-open');
+    document.body.classList.remove('pkg343-settings-open','pkg372ShowWritingTools','pkg372ModeMenuOpen');
+  }
+  function install(){
+    if(installed)return;
+    const old=$('writingCanvas'),board=$('writeBoard'); if(!old||!board)return;
+    installed=true;
+    // 重新建立 canvas，徹底移除歷代重複 pointer/touch listener，保留原畫面像素。
+    const canvas=old.cloneNode(false);
+    const ow=old.width,oh=old.height;
+    canvas.width=ow; canvas.height=oh;
+    try{canvas.getContext('2d').drawImage(old,0,0);}catch(e){}
+    canvas.dataset.pkg373Pipeline='1';
+    canvas.style.touchAction='none';canvas.style.userSelect='none';canvas.style.webkitUserSelect='none';
+    old.replaceWith(canvas);
+    try{writeState.drawing=false;writeState.pointerId=null;writeState.currentStroke=null;writeState.lastPenAt=0;window.writeState=writeState;}catch(e){}
+    safe('resizeWritingCanvas',true); safe('renderWritingGuide');
+
+    const pointers=new Map();
+    const now=()=>performance.now();
+    const shouldWrite=evt=>{try{return typeof pointerShouldWrite==='function'?pointerShouldWrite(evt):true}catch(e){return true}};
+    const eventsOf=evt=>{try{const a=evt.getCoalescedEvents?.();return a&&a.length?a:[evt]}catch(e){return [evt]}};
+    function down(evt){
+      pointers.set(evt.pointerId,{type:evt.pointerType||'touch'});
+      if(evt.pointerType==='touch' && evt.isPrimary===false)return;
+      if(!shouldWrite(evt))return;
+      if(writeState.drawing)return;
+      evt.preventDefault();evt.stopImmediatePropagation();
+      closeSheets(); safe('setWritingLock',true);safe('ensureWritingCanvasSize',true);
+      try{beginStrokeRecord(evt);}catch(e){}
+      const ctx=canvas.getContext('2d'),p=safe('canvasPoint',evt)||{x:0,y:0};
+      try{canvas.setPointerCapture?.(evt.pointerId)}catch(e){}
+      const pressure=safe('pointerPressure',evt)||0.68,base=safe('brushWidth')||8;
+      writeState.drawing=true;writeState.pointerId=evt.pointerId;writeState.lastX=p.x;writeState.lastY=p.y;writeState.lastPoint=p;writeState.prevPoint=p;writeState.lastTime=evt.timeStamp||now();writeState.lastPressure=pressure;writeState.lastWidth=base*(0.62+pressure*0.72);writeState.pkg343PrevMid=null;
+      safe('drawDot',ctx,p,writeState.lastWidth,evt);board.classList.add('pkg343WritingActive');safe('setWriteStatus',evt.pointerType==='pen'?'觸控筆書寫中｜已啟用防手掌誤觸':'書寫中');
+    }
+    function move(evt){
+      if(!writeState.drawing||writeState.pointerId!==evt.pointerId||!shouldWrite(evt))return;
+      evt.preventDefault();evt.stopImmediatePropagation();
+      const ctx=canvas.getContext('2d'),base=safe('brushWidth')||8;
+      for(const ev of eventsOf(evt)){
+        try{appendStrokeRecord(ev);}catch(e){}
+        const p=safe('canvasPoint',ev);if(!p)continue;
+        const t=ev.timeStamp||now(),from=writeState.lastPoint||{x:writeState.lastX,y:writeState.lastY};
+        const dist=Math.hypot(p.x-from.x,p.y-from.y),dt=Math.max(1,t-(writeState.lastTime||t-16));
+        if(dist<0.20)continue;
+        // 異常座標跳點不硬連，避免旋轉/系統手勢後畫出跨頁長線。
+        const cssW=Number(canvas.dataset.cssW)||canvas.getBoundingClientRect().width||1,cssH=Number(canvas.dataset.cssH)||canvas.getBoundingClientRect().height||1;
+        if(dist>Math.max(320,Math.min(cssW,cssH)*0.48) && dt>55){writeState.lastPoint=p;writeState.lastX=p.x;writeState.lastY=p.y;writeState.lastTime=t;continue;}
+        const width=safe('pressureWidth',base,ev,dist,dt)||base;
+        const mid=safe('strokeTo',ctx,from,p,width,ev)||p;
+        writeState.prevPoint=from;writeState.lastX=mid.x;writeState.lastY=mid.y;writeState.lastPoint=p;writeState.lastTime=t;
+      }
+    }
+    function up(evt){
+      pointers.delete(evt.pointerId);
+      if(!writeState.drawing||writeState.pointerId!==evt.pointerId)return;
+      if(shouldWrite(evt)){evt.preventDefault();evt.stopImmediatePropagation();}
+      try{canvas.releasePointerCapture?.(evt.pointerId)}catch(e){}
+      writeState.drawing=false;writeState.pointerId=null;writeState.lastPoint=null;writeState.prevPoint=null;writeState.pkg343PrevMid=null;
+      try{finishStrokeRecord();}catch(e){}
+      board.classList.remove('pkg343WritingActive');
+      if(!document.fullscreenElement)safe('setWritingLock',false);
+      safe('setWriteStatus','待命');
+      setTimeout(()=>safe('pkg346ManualSave'),160);
+    }
+    canvas.addEventListener('pointerdown',down,{passive:false});
+    canvas.addEventListener('pointermove',move,{passive:false});
+    canvas.addEventListener('pointerup',up,{passive:false});
+    canvas.addEventListener('pointercancel',up,{passive:false});
+    canvas.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse')up(e)},{passive:false});
+    ['contextmenu','selectstart','dragstart'].forEach(t=>canvas.addEventListener(t,e=>e.preventDefault(),{passive:false}));
+    document.documentElement.dataset.pkg373Pipeline=VERSION;
+  }
+  // 等所有舊版修補安裝完再收斂成單一管線。
+  if(document.readyState==='complete')setTimeout(install,1650);else window.addEventListener('load',()=>setTimeout(install,1650),{once:true});
 })();
 </script>
 
