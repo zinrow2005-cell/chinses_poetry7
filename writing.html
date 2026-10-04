@@ -78,6 +78,48 @@ html.daofa-writing-lock, body.daofa-writing-lock{overflow:hidden!important;overs
 .writeToolbar .tool-on{background:linear-gradient(180deg,#6b4a2e,#3d2819)!important;color:#fff!important;border-color:#54351f!important;}
 .writeToolbar .toolbarSelect{width:auto!important;min-width:84px!important;border-radius:999px!important;padding:8px 10px!important;font-weight:900;background:#fffaf2!important;}
 .writeToolbar .toolbarColor{width:42px!important;height:36px!important;min-width:42px!important;padding:2px!important;border-radius:999px!important;cursor:pointer;background:#fffaf2!important;}
+.toolbarCore{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.toolbarMiniDock{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding-top:2px;}
+.toolbarDockBtn{min-width:42px!important;width:42px!important;height:42px!important;padding:0!important;border-radius:14px!important;display:flex!important;align-items:center!important;justify-content:center!important;font-size:18px!important;line-height:1!important;background:#fffdf8!important;border:1px solid #d9bc96!important;}
+.toolbarDockBtn.active{background:linear-gradient(180deg,#b86b27,#8d460f)!important;color:#fff!important;border-color:#9c4b12!important;box-shadow:0 8px 18px rgba(126,70,24,.18)!important;}
+.toolbarDockBtn small{font-size:0;line-height:0;}
+.toolbarPopoverHost{position:relative;width:100%;}
+.toolbarPopover{display:none;position:relative;margin-top:6px;padding:10px 12px;border:1px solid #e4caa7;border-radius:16px;background:#fffdf8;box-shadow:0 10px 26px rgba(66,40,18,.08);}
+.toolbarPopover.show{display:block;}
+.toolbarPopover h4{margin:0 0 8px;color:#744014;font-size:13px;}
+.toolbarPopoverRow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.toolbarPopoverRow button,.toolbarPopoverRow select,.toolbarPopoverRow input{min-height:38px;}
+.toolbarCoreHint{font-size:12px;color:#8a6648;line-height:1.5;margin-left:auto;}
+@media(max-width:980px){.toolbarCoreHint{display:none;}}
+@media(max-width:760px){.toolbarDockBtn{min-width:38px!important;width:38px!important;height:38px!important;font-size:16px!important}.toolbarPopover{padding:9px 10px;}}
+/* PKG382｜跨裝置工具列圖示與排列 */
+.toolbarDockBtn{position:relative;overflow:hidden;}
+.toolbarDockBtn .toolIcon{width:20px;height:20px;display:block;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;pointer-events:none;}
+.toolbarDockBtn .toolLabel{position:absolute;left:50%;transform:translateX(-50%);bottom:-22px;font-size:10px;white-space:nowrap;opacity:0;pointer-events:none;background:#5a3215;color:#fff;border-radius:8px;padding:3px 6px;transition:.12s ease;z-index:5;}
+.toolbarDockBtn:hover .toolLabel,.toolbarDockBtn:focus-visible .toolLabel{bottom:-26px;opacity:1;}
+.toolbarMiniDock{padding-bottom:2px;overflow:visible;}
+.toolbarCore button{min-width:auto;}
+@media(min-width:1101px){
+  .writeToolbar{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;column-gap:10px!important;row-gap:6px!important;align-items:center!important;}
+  .toolbarCore{grid-column:1;grid-row:1;flex-wrap:nowrap!important;overflow-x:auto!important;scrollbar-width:none!important;}
+  .toolbarCore::-webkit-scrollbar{display:none;}
+  .toolbarMiniDock{grid-column:2;grid-row:1;flex-wrap:nowrap!important;justify-content:flex-end!important;}
+  .toolbarPopoverHost{grid-column:1 / -1;grid-row:2;}
+  .toolbarDockBtn{width:40px!important;min-width:40px!important;height:40px!important;}
+}
+@media(min-width:761px) and (max-width:1100px){
+  .writeToolbar{display:flex!important;flex-direction:column!important;gap:7px!important;}
+  .toolbarCore{order:1!important;display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;scrollbar-width:none!important;padding-bottom:2px!important;}
+  .toolbarCore::-webkit-scrollbar{display:none;}
+  .toolbarMiniDock{order:2!important;display:grid!important;grid-template-columns:repeat(5,44px)!important;justify-content:start!important;gap:8px!important;}
+  .toolbarPopoverHost{order:3!important;}
+  .toolbarDockBtn{width:44px!important;min-width:44px!important;height:44px!important;}
+}
+@media(max-width:760px){
+  body .writeToolbar{display:none!important;}
+  /* 手機原本使用底部書寫 dock；避免頂部工具列與畫布互相擠壓 */
+}
+
 .pkg332PalettePanel{position:fixed;right:16px;top:68px;z-index:2147482800;display:none;width:min(340px,calc(100vw - 24px));background:rgba(255,250,242,.98);border:1px solid #e3c49d;border-radius:20px;padding:12px;box-shadow:0 20px 60px rgba(68,38,14,.22);backdrop-filter:blur(10px);user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
 .pkg332PalettePanel.show{display:block;}
 .pkg332PalettePanel h4{margin:0 0 8px;color:#6e390f;font-size:16px;}
@@ -249,6 +291,8 @@ label{font-size:var(--daofa-label-size,12px) !important;}
 .fontAdvancedBody .smallNote{margin:0;}
 @media(max-width:760px){.traceQuickGrid{grid-template-columns:1fr 1fr!important;}.traceCurrentRow{align-items:flex-start;}.traceCurrentRow b{text-align:left;}}
 @media(max-width:380px){.traceQuickGrid{grid-template-columns:1fr!important;}}
+
+@media(min-width:761px){.toolbarPopover{animation:toolbarPopIn .12s ease-out;}@keyframes toolbarPopIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}}
 </style>
 
 <script>
@@ -443,29 +487,61 @@ body.pkg345-writing-fullscreen .pkg346Bar{display:none!important;}
         <span class="status" id="writeStatus">書寫板待命</span>
       </div>
       <div class="writeToolbar">
-        <div class="toolbarRow primaryTools" aria-label="核心書寫操作">
-          <button id="modeCharBtn" type="button" class="on">單字放大</button>
-          <button id="modeSentenceBtn" type="button">一句一句</button>
-          <button id="modeFullBtn" type="button">全文連續</button>
-          <button id="prevUnitBtn" type="button">上一字/句</button>
-          <button id="nextUnitBtn" type="button">下一字/句</button>
-          <button type="button" onclick="undoLastStroke()">復原上一筆</button>
-          <button type="button" onclick="clearWritingCanvas()">清本頁</button>
+        <div class="toolbarCore toolbarRow primaryTools" aria-label="核心書寫操作">
+          <button id="modeCharBtn" type="button" class="on">單字</button>
+          <button id="modeSentenceBtn" type="button">句子</button>
+          <button id="modeFullBtn" type="button">全文</button>
+          <button id="prevUnitBtn" type="button">上一個</button>
+          <button id="nextUnitBtn" type="button">下一個</button>
+          <button type="button" onclick="undoLastStroke()">復原</button>
+          <button type="button" onclick="clearWritingCanvas()">清除</button>
+          <span class="toolbarCoreHint">進階筆刷與畫面設定改為下方小圖示收合</span>
         </div>
-        <div class="toolbarRow secondaryTools" aria-label="筆刷與進階工具">
-          <button id="focusWritingBtn" type="button" onclick="toggleFocusWriting()">專注書寫：開</button>
-          <button type="button" onclick="enterWritingFullscreen()">全螢幕書寫</button>
-          <button id="exitFullscreenBtn" type="button" onclick="exitWritingFullscreen()">關閉全螢幕</button>
-          <button id="brushToolBtn" type="button" onclick="setWritingTool('brush')">筆刷</button>
-          <button id="eraserToolBtn" type="button" onclick="setWritingTool('eraser')">橡皮擦</button>
-          <span class="pkg333ToolDivider"></span>
-          <select id="toolbarBrushType" class="pkg333MiniSelect" title="筆種" onchange="setBrushType(this.value)"><option value="round">圓筆</option><option value="calligraphy" selected>毛筆</option><option value="ink">沾墨筆</option><option value="marker">麥克筆</option><option value="pencil">鉛筆</option><option value="dry">乾筆飛白</option></select>
-          <select id="toolbarBrushSize" class="toolbarSelect" title="筆刷粗細" onchange="syncToolbarBrushSize(this.value)"><option value="5">細筆</option><option value="8" selected>標準</option><option value="12">粗筆</option><option value="18">特粗</option><option value="26">超大</option></select>
-          <input id="toolbarBrushOpacity" class="pkg333Range" type="range" min="0.25" max="1" step="0.05" value="1" title="透明度" oninput="setBrushOpacity(this.value)">
-          <input id="toolbarInkColor" class="toolbarColor" type="color" value="#23140b" title="墨色" onchange="setInkColor(this.value)">
-          <button id="paletteBtn" type="button" onclick="togglePalettePanel()">調色盤</button>
-          <button type="button" onclick="calibrateWritingCanvas()">校正座標</button>
-          <button type="button" onclick="exportWritingPNG()">匯出 PNG</button>
+        <div class="toolbarMiniDock toolbarRow secondaryTools" aria-label="進階工具圖示列">
+          <button class="toolbarDockBtn" type="button" data-toolbar-panel-btn="panelTool" onclick="toggleToolbarPanel('panelTool',this)" title="工具" aria-label="工具"><svg class="toolIcon" viewBox="0 0 24 24"><path d="M4 20l4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20z"/><path d="M14.5 7.5l3 3"/></svg><span class="toolLabel">工具</span></button>
+          <button class="toolbarDockBtn" type="button" data-toolbar-panel-btn="panelBrush" onclick="toggleToolbarPanel('panelBrush',this)" title="筆刷" aria-label="筆刷"><svg class="toolIcon" viewBox="0 0 24 24"><path d="M14 4l6 6-8.5 8.5c-1.7 1.7-4.2 2-6.2.9 1.3-.3 2.2-1.1 2.6-2.2.4-1.1.1-2.3-.7-3.1L14 4z"/><path d="M7.5 16.5c-2.2 0-3.5 1.2-3.5 3.5 1.2-.8 2.3-1.1 3.5-1"/></svg><span class="toolLabel">筆刷</span></button>
+          <button class="toolbarDockBtn" type="button" data-toolbar-panel-btn="panelColor" onclick="toggleToolbarPanel('panelColor',this)" title="顏色" aria-label="顏色"><svg class="toolIcon" viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 0 0 16h1.2a1.8 1.8 0 0 0 0-3.6H12a1.9 1.9 0 0 1 0-3.8h2.4A5.6 5.6 0 0 0 20 7c0-1.7-3.6-3-8-3z"/><path d="M7 9h.01M10 7h.01M15 7h.01M17 10h.01"/></svg><span class="toolLabel">顏色</span></button>
+          <button class="toolbarDockBtn" type="button" data-toolbar-panel-btn="panelView" onclick="toggleToolbarPanel('panelView',this)" title="畫面" aria-label="畫面"><svg class="toolIcon" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M8 8h8M8 12h5"/></svg><span class="toolLabel">畫面</span></button>
+          <button class="toolbarDockBtn" type="button" data-toolbar-panel-btn="panelExport" onclick="toggleToolbarPanel('panelExport',this)" title="匯出" aria-label="匯出"><svg class="toolIcon" viewBox="0 0 24 24"><path d="M12 4v11"/><path d="M8 11l4 4 4-4"/><path d="M5 19h14"/></svg><span class="toolLabel">匯出</span></button>
+        </div>
+        <div class="toolbarPopoverHost">
+          <div id="panelTool" class="toolbarPopover" aria-hidden="true">
+            <h4>工具</h4>
+            <div class="toolbarPopoverRow">
+              <button id="focusWritingBtn" type="button" onclick="toggleFocusWriting()">專注書寫：開</button>
+              <button id="brushToolBtn" type="button" onclick="setWritingTool('brush')">筆刷</button>
+              <button id="eraserToolBtn" type="button" onclick="setWritingTool('eraser')">橡皮擦</button>
+            </div>
+          </div>
+          <div id="panelBrush" class="toolbarPopover" aria-hidden="true">
+            <h4>筆刷設定</h4>
+            <div class="toolbarPopoverRow">
+              <select id="toolbarBrushType" class="pkg333MiniSelect" title="筆種" onchange="setBrushType(this.value)"><option value="round">圓筆</option><option value="calligraphy" selected>毛筆</option><option value="ink">沾墨筆</option><option value="marker">麥克筆</option><option value="pencil">鉛筆</option><option value="dry">乾筆飛白</option></select>
+              <select id="toolbarBrushSize" class="toolbarSelect" title="筆刷粗細" onchange="syncToolbarBrushSize(this.value)"><option value="5">細筆</option><option value="8" selected>標準</option><option value="12">粗筆</option><option value="18">特粗</option><option value="26">超大</option></select>
+              <input id="toolbarBrushOpacity" class="pkg333Range" type="range" min="0.25" max="1" step="0.05" value="1" title="透明度" oninput="setBrushOpacity(this.value)">
+            </div>
+          </div>
+          <div id="panelColor" class="toolbarPopover" aria-hidden="true">
+            <h4>顏色</h4>
+            <div class="toolbarPopoverRow">
+              <input id="toolbarInkColor" class="toolbarColor" type="color" value="#23140b" title="墨色" onchange="setInkColor(this.value)">
+              <button id="paletteBtn" type="button" onclick="togglePalettePanel()">調色盤</button>
+            </div>
+          </div>
+          <div id="panelView" class="toolbarPopover" aria-hidden="true">
+            <h4>畫面與座標</h4>
+            <div class="toolbarPopoverRow">
+              <button type="button" onclick="enterWritingFullscreen()">全螢幕書寫</button>
+              <button id="exitFullscreenBtn" type="button" onclick="exitWritingFullscreen()">關閉全螢幕</button>
+              <button type="button" onclick="calibrateWritingCanvas()">校正座標</button>
+            </div>
+          </div>
+          <div id="panelExport" class="toolbarPopover" aria-hidden="true">
+            <h4>匯出</h4>
+            <div class="toolbarPopoverRow">
+              <button type="button" onclick="exportWritingPNG()">匯出 PNG</button>
+            </div>
+          </div>
         </div>
       </div>
       <div id="pkg332PalettePanel" class="pkg332PalettePanel" aria-hidden="true">
@@ -104800,6 +104876,9 @@ function setInkColor(color){
   setWritingTool('brush',false);
   setWriteStatus('墨色已切換');
 }
+function closeToolbarPanels(){document.querySelectorAll('.toolbarPopover').forEach(p=>{p.classList.remove('show');p.setAttribute('aria-hidden','true');});document.querySelectorAll('[data-toolbar-panel-btn]').forEach(b=>b.classList.remove('active'));}
+function toggleToolbarPanel(id,btn){const panel=$(id); if(!panel) return; const willOpen=!panel.classList.contains('show'); closeToolbarPanels(); if(willOpen){panel.classList.add('show'); panel.setAttribute('aria-hidden','false'); if(btn) btn.classList.add('active');}}
+document.addEventListener('click',function(e){if(!e.target.closest('.writeToolbar')) closeToolbarPanels();});
 function togglePalettePanel(force){
   const panel=$('pkg332PalettePanel'); if(!panel) return;
   const show=typeof force==='boolean'?force:!panel.classList.contains('show');
