@@ -910,8 +910,8 @@ body.daofaHomeMode .mobileBottomNav{display:grid!important;}
 </div>
 </div>
 <div class="speechPanel" id="speechPanel">
-<h3>免金鑰 AI 朗讀設定</h3>
-<p>使用瀏覽器內建 Web Speech 語音，不需要 Azure、不需要金鑰。聲音品質會依你的 Windows、iPad、Mac 或瀏覽器可用語音而不同。</p>
+<h3>朗讀設定</h3>
+<p>使用裝置內建 Web Speech 中文語音，不需要金鑰。不同朗讀模式會套用不同的聲線偏好、語速、音高與停頓；實際可用聲音依 Windows、iPad、Mac 或瀏覽器而定。</p>
 <label>朗讀模式</label>
 <select id="speechMode">
 <option value="poem">詩詞慢讀｜停頓明顯</option>
@@ -105382,32 +105382,59 @@ function renderVoiceSelect(){
   sel.innerHTML='<option value="">自動選擇</option>'+opts;
   if([...sel.options].some(o=>o.value===old)) sel.value=old;
 }
-function pickVoice(){
+function voiceGenderHint(v){
+  const n=normalizeVoiceName(v);
+  if(/female|女|xiaoxiao|hsiao|hanhan|yaoyao|mei|huihui|wanlung|xiaoyi|xiaomo|xiaoxuan|tingting|sinji|meijia|yating|li-mu|shelley/.test(n)) return 'female';
+  if(/male|男|yunxi|yunyang|yunjian|yunze|kangkang|zhiwei|darren|daniel|yun/.test(n)) return 'male';
+  return 'unknown';
+}
+function modeVoicePreference(mode){
+  const profiles={
+    poem:{gender:'female',keywords:/natural|neural|premium|online|xiaoxiao|hsiao|hanhan|meijia|yating|tingting|wanlung|shelley/},
+    teacher:{gender:'male',keywords:/natural|neural|premium|online|yunyang|yunxi|yunjian|darren|daniel|zhiwei/},
+    child:{gender:'female',keywords:/xiaoyi|xiaoxiao|hsiao|hanhan|yaoyao|mei|tingting|female|女/},
+    plain:{gender:'unknown',keywords:/natural|neural|premium|online|google|microsoft|apple/}
+  };
+  return profiles[mode]||profiles.poem;
+}
+function pickVoice(mode=speechSettings.mode){
   if(!availableVoices.length) availableVoices=speechSynthesis.getVoices()||[];
   const manualName=speechSettings.voicePref==='manual' ? speechSettings.voiceName : '';
   if(manualName){const v=availableVoices.find(x=>x.name===manualName); if(v) return v;}
   const zh=availableVoices.filter(v=>/zh|chinese|mandarin|taiwan|hant|han/i.test(`${v.lang} ${v.name}`));
   const source=zh.length?zh:availableVoices;
   const pref=speechSettings.voicePref;
+  const modePref=modeVoicePreference(mode);
   const score=v=>{
     const n=normalizeVoiceName(v); let s=0;
-    if(/zh-tw|taiwan|hant|繁|臺|台/.test(n)) s+=60;
-    if(/zh-hk|cantonese/.test(n)) s+=25;
-    if(/zh-cn|mandarin|chinese|中文|國語|普通话|普通話/.test(n)) s+=35;
-    if(/microsoft|google|apple|natural|neural|online|xiaoxiao|hsiao|hanhan|yaoyao|mei|female|女/.test(n)) s+=20;
-    if(pref==='female' && /female|女|xiaoxiao|hsiao|hanhan|yaoyao|mei|huihui|hui|wanlung|yu/.test(n)) s+=35;
-    if(pref==='male' && /male|男|yun|kangkang|zhiwei|darren|daniel/.test(n)) s+=35;
-    if(/compact|ebook/.test(n)) s-=10;
+    if(/zh-tw|taiwan|hant|繁|臺|台/.test(n)) s+=70;
+    if(/zh-hk|cantonese/.test(n)) s+=15;
+    if(/zh-cn|mandarin|chinese|中文|國語|普通话|普通話/.test(n)) s+=30;
+    if(/microsoft|google|apple|natural|neural|online|premium/.test(n)) s+=18;
+    const gender=voiceGenderHint(v);
+    if(modePref.gender!=='unknown' && gender===modePref.gender) s+=34;
+    if(modePref.keywords.test(n)) s+=28;
+    if(pref==='female' && gender==='female') s+=45;
+    if(pref==='male' && gender==='male') s+=45;
+    if(/compact|ebook/.test(n)) s-=12;
     return s;
   };
-  return [...source].sort((a,b)=>score(b)-score(a))[0]||null;
+  const sorted=[...source].sort((a,b)=>score(b)-score(a));
+  // 朗讀模式優先使用不同聲線；若只有一個中文聲音則自然回退同一聲音。
+  return sorted[0]||null;
+}
+function currentVoiceLabel(mode=speechSettings.mode){
+  const v=pickVoice(mode);
+  return v?`${v.name}｜${v.lang}`:'系統預設中文語音';
 }
 function applySpeechMode(mode){
   speechSettings.mode=mode||speechSettings.mode||'poem';
-  const presets={poem:{rate:0.78,pitch:1.04,pause:520},teacher:{rate:0.88,pitch:1.0,pause:360},child:{rate:0.68,pitch:1.12,pause:620},plain:{rate:0.92,pitch:1.0,pause:260}};
+  const presets={poem:{rate:0.72,pitch:1.08,pause:620},teacher:{rate:0.88,pitch:0.94,pause:360},child:{rate:0.62,pitch:1.22,pause:720},plain:{rate:0.98,pitch:1.0,pause:220}};
   Object.assign(speechSettings,presets[speechSettings.mode]||presets.poem);
   syncSpeechControls();
+  updateVoiceStatus(`模式：${speechModeLabel(speechSettings.mode)}｜${currentVoiceLabel(speechSettings.mode)}`);
 }
+function speechModeLabel(mode){return ({poem:'詩詞慢讀',teacher:'老師導讀',child:'兒童慢讀',plain:'白話解釋'})[mode]||'詩詞慢讀';}
 function syncSpeechControls(){
   const map={speechMode:'mode',voicePref:'voicePref',voiceSelect:'voiceName',speechRate:'rate',speechPitch:'pitch',speechPause:'pause'};
   Object.entries(map).forEach(([id,key])=>{const el=$(id); if(el) el.value=speechSettings[key]??'';});
@@ -105426,7 +105453,7 @@ function saveSpeechSettings(){
     if(id==='speechPause') speechSettings.pause=Number(el.value);
   });
   try{localStorage.setItem('speechSettings',JSON.stringify(speechSettings));}catch(e){}
-  updateVoiceStatus('設定已儲存');
+  updateVoiceStatus(`設定已儲存｜${speechModeLabel(speechSettings.mode)}｜${currentVoiceLabel(speechSettings.mode)}`);
 }
 function bindSpeechControls(){
   const mode=$('speechMode'); if(mode) mode.addEventListener('change',e=>{applySpeechMode(e.target.value);saveSpeechSettings();});
@@ -105460,11 +105487,11 @@ function speakNextChunk(){
   const text=speechQueue[speechQueueIndex];
   const u=new SpeechSynthesisUtterance(text);
   u.lang='zh-TW';
-  const voice=pickVoice(); if(voice) u.voice=voice;
+  const voice=pickVoice(speechSettings.mode); if(voice) u.voice=voice;
   u.rate=Number(speechSettings.rate)||0.85;
   u.pitch=Number(speechSettings.pitch)||1.05;
   u.volume=1;
-  u.onstart=()=>updateVoiceStatus(`朗讀中 ${speechQueueIndex+1}/${speechQueue.length}`);
+  u.onstart=()=>updateVoiceStatus(`${speechModeLabel(speechSettings.mode)}｜朗讀中 ${speechQueueIndex+1}/${speechQueue.length}`);
   u.onerror=()=>{speechQueueIndex++; setTimeout(speakNextChunk,120);};
   u.onend=()=>{speechQueueIndex++; if(!speechStopped&&!speechPaused) setTimeout(speakNextChunk,Number(speechSettings.pause)||420);};
   speechSynthesis.speak(u);
@@ -105483,15 +105510,14 @@ function stopSpeech(){
 }
 function previewVoice(){
   saveSpeechSettings();
-  speakQueue(['王泰山畜牧場詩詞朗讀測試。','春眠不覺曉，處處聞啼鳥。','這是免金鑰的瀏覽器內建語音朗讀。'], speechSettings.mode);
+  speakQueue(['春眠不覺曉，處處聞啼鳥。','床前明月光，疑是地上霜。'], speechSettings.mode);
 }
-function speakCurrent(){const p=POEMS[state.selected]; applySpeechMode('poem'); speakQueue([p.title, `${p.author}，${p.dynasty}`, ...makePoemQueue(p.original)], 'poem');}
-function speakLinesOnly(){const p=POEMS[state.selected]; applySpeechMode('poem'); speakQueue(makePoemQueue(p.original), 'poem');}
-function speakPlainAll(){const p=POEMS[state.selected]; applySpeechMode('plain'); speakQueue((p.lines||[]).flatMap(l=>[l.text, '白話意思：'+(l.plain||'')]), 'plain');}
-function speakScholar(){const p=POEMS[state.selected]; applySpeechMode('teacher'); const parts=[p.title, `${p.author}，${p.dynasty}`, '全文通透解釋。'+(p.overview||''), '作者心情分析。'+(p.mood||''), ...(p.lines||[]).flatMap(l=>[l.text, '白話：'+(l.plain||''), '深層含意：'+(l.deep||'')])]; speakQueue(parts,'teacher');}
+function speakCurrent(){const p=POEMS[state.selected]; speakQueue([p.title, `${p.author}，${p.dynasty}`, ...makePoemQueue(p.original)], speechSettings.mode);}
+function speakLinesOnly(){const p=POEMS[state.selected]; speakQueue(makePoemQueue(p.original), speechSettings.mode);}
+function speakPlainAll(){const p=POEMS[state.selected]; speakQueue((p.lines||[]).flatMap(l=>[l.text, '白話意思：'+(l.plain||'')]), speechSettings.mode);}
+function speakScholar(){const p=POEMS[state.selected]; const parts=[p.title, `${p.author}，${p.dynasty}`, '全文通透解釋。'+(p.overview||''), '作者心情分析。'+(p.mood||''), ...(p.lines||[]).flatMap(l=>[l.text, '白話：'+(l.plain||''), '深層含意：'+(l.deep||'')])]; speakQueue(parts,speechSettings.mode);}
 function speakLineByIndex(idx,kind='plain'){
   const p=POEMS[state.selected]; const l=(p.lines||[])[idx]; if(!l) return;
-  applySpeechMode(kind==='deep'||kind==='note'?'teacher':'plain');
   const label=kind==='deep'?'深層含意':kind==='note'?'補充註釋':'白話意思';
   const body=kind==='deep'?l.deep:kind==='note'?l.note:l.plain;
   speakQueue([l.text, label+'。'+(body||'')], speechSettings.mode);
