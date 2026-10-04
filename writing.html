@@ -107843,19 +107843,18 @@ body.pkg345-writing-fullscreen .boardCard.pkg333FullscreenHost .writeBoard.fulls
      ${btn('筆刷與粗細','brush','onclick="pkg384ToggleFsPanel(\'pkg384BrushPanel\',this)"','pkg384PanelBtn')}
      ${btn('顏色','color','onclick="pkg384ToggleFsPanel(\'pkg384ColorPanel\',this)"','pkg384PanelBtn')}
      ${btn('格線','grid','onclick="pkg384ToggleFsPanel(\'pkg384GridPanel\',this)"','pkg384PanelBtn')}
-     ${btn('字體大小','font','onclick="pkg384ToggleFsPanel(\'pkg391FontSizePanel\',this)"','pkg384PanelBtn')}
+     <span class="pkg391InlineSize" aria-label="臨摹底字大小"><button type="button" class="pkg384IconBtn pkg391SizeBtn" title="縮小底字" aria-label="縮小底字" onclick="pkg391AdjustWritingSize(-10)">A−</button><strong id="pkg391WritingSizeValue" class="pkg391InlineValue">100%</strong><button type="button" class="pkg384IconBtn pkg391SizeBtn" title="放大底字" aria-label="放大底字" onclick="pkg391AdjustWritingSize(10)">A＋</button></span>
      ${btn('其他','more','onclick="pkg384ToggleFsPanel(\'pkg384MorePanel\',this)"','pkg384PanelBtn')}
    </div>
    <div id="pkg384BrushPanel" class="pkg384Panel"><div class="pkg384PanelRow">${pens}<span class="pkg384Sep"></span>${sizes}</div></div>
    <div id="pkg384ColorPanel" class="pkg384Panel"><div class="pkg384PanelRow">${colors}<button type="button" onclick="togglePalettePanel()">更多調色盤</button></div></div>
    <div id="pkg384GridPanel" class="pkg384Panel"><div class="pkg384PanelRow"><button type="button" onclick="setPkg343Paper('mi');pkg384CloseFsPanels()">米字格</button><button type="button" onclick="setPkg343Paper('square');pkg384CloseFsPanels()">方格</button><button type="button" onclick="setPkg343Paper('line');pkg384CloseFsPanels()">橫線</button><button type="button" onclick="setPkg343Paper('blank');pkg384CloseFsPanels()">空白</button></div></div>
-   <div id="pkg391FontSizePanel" class="pkg384Panel"><div class="pkg384PanelRow"><button type="button" onclick="pkg391AdjustWritingSize(-10)">－</button><strong id="pkg391WritingSizeValue" class="pkg391SizeValue">100%</strong><button type="button" onclick="pkg391AdjustWritingSize(10)">＋</button><span class="pkg384Sep"></span><button type="button" onclick="pkg391SetWritingSize(80)">80%</button><button type="button" onclick="pkg391SetWritingSize(100)">100%</button><button type="button" onclick="pkg391SetWritingSize(120)">120%</button><button type="button" onclick="pkg391SetWritingSize(150)">150%</button></div></div>
    <div id="pkg384MorePanel" class="pkg384Panel"><div class="pkg384PanelRow"><button type="button" onclick="pkg346ManualSave()">存檔</button><button type="button" onclick="pkg346RestoreDraft()">續寫</button><button type="button" onclick="pkg346ZoomOut()">縮小</button><button type="button" onclick="pkg346ResetView()">100%</button><button type="button" onclick="pkg346ZoomIn()">放大</button><button type="button" onclick="pkg346TogglePanMode()">拖曳</button><button type="button" onclick="calibrateWritingCanvas()">校正</button><button type="button" onclick="exportWritingPNG()">匯出 PNG</button></div></div>`;
    (document.querySelector('.boardCard')||document.body).appendChild(wrap);
  }
  function pkg391ReadWritingSize(){try{return Math.max(60,Math.min(200,Number((window.DaofaDisplay&&DaofaDisplay.read().writing)||100)||100));}catch(e){return 100;}}
  function pkg391SyncWritingSize(){const el=$('pkg391WritingSizeValue');if(el)el.textContent=pkg391ReadWritingSize()+'%';}
- window.pkg391SetWritingSize=function(v){v=Math.max(60,Math.min(200,Math.round(Number(v)||100)));try{if(window.DaofaDisplay&&typeof DaofaDisplay.update==='function')DaofaDisplay.update({writing:v});else{const raw=JSON.parse(localStorage.getItem('daofaDisplaySettingsV1')||'{}');raw.writing=v;localStorage.setItem('daofaDisplaySettingsV1',JSON.stringify(raw));if(typeof window.daofaApplyWritingSize==='function')window.daofaApplyWritingSize();}}catch(e){}pkg391SyncWritingSize();try{if(typeof renderWritingGuide==='function')renderWritingGuide();if(typeof window.daofaApplyWritingSize==='function')window.daofaApplyWritingSize();}catch(e){}};
+ window.pkg391SetWritingSize=function(v){v=Math.max(60,Math.min(200,Math.round(Number(v)||100)));try{if(window.DaofaDisplay&&typeof DaofaDisplay.update==='function')DaofaDisplay.update({writing:v});else{const raw=JSON.parse(localStorage.getItem('daofaDisplaySettingsV1')||'{}');raw.writing=v;localStorage.setItem('daofaDisplaySettingsV1',JSON.stringify(raw));if(typeof window.daofaApplyWritingSize==='function')window.daofaApplyWritingSize();}}catch(e){}pkg391SyncWritingSize();try{if(typeof renderWritingGuide==='function')renderWritingGuide();if(typeof window.daofaApplyWritingSize==='function')window.daofaApplyWritingSize();if(typeof setWriteStatus==='function')setWriteStatus('臨摹底字 '+v+'%');}catch(e){}};
  window.pkg391AdjustWritingSize=function(delta){pkg391SetWritingSize(pkg391ReadWritingSize()+(Number(delta)||0));};
  window.pkg384CloseFsPanels=function(){document.querySelectorAll('.pkg384Panel').forEach(p=>p.classList.remove('show'));document.querySelectorAll('.pkg384PanelBtn').forEach(b=>b.classList.remove('active'));};
  window.pkg384ToggleFsPanel=function(id,b){const p=$(id);if(!p)return;const open=!p.classList.contains('show');pkg384CloseFsPanels();if(open){p.classList.add('show');b&&b.classList.add('active');}};
@@ -108109,11 +108108,18 @@ body:not(.pkg345-writing-fullscreen) .pkg343Dock{display:none!important;visibili
 })();
 </script>
 
-<style id="pkg391-fullscreen-font-size-css">
-/* PKG391｜全螢幕臨摹底字大小控制 */
-.pkg391SizeValue{display:inline-flex;align-items:center;justify-content:center;min-width:62px;height:36px;padding:0 10px;border-radius:999px;background:#6b3a18;color:#fff;font-size:15px;font-weight:900;}
-body.pkg345-writing-fullscreen .pkg384Panel{top:106px!important;}
-@media(max-width:700px){body.pkg345-writing-fullscreen .pkg384Panel{top:94px!important;}.pkg391SizeValue{min-width:56px;height:34px;font-size:14px;}}
+<style id="pkg393-fullscreen-inline-font-size-css">
+/* PKG393｜全螢幕底字大小直接縮放，不再開啟額外面板 */
+.pkg391InlineSize{display:inline-flex;align-items:center;gap:4px;padding:0 3px;border-left:1px solid #dec19a;border-right:1px solid #dec19a;}
+.pkg391InlineSize .pkg391SizeBtn{width:40px!important;min-width:40px!important;font-size:13px!important;font-weight:900!important;letter-spacing:-.04em;}
+.pkg391InlineValue{display:inline-flex;align-items:center;justify-content:center;min-width:48px;height:34px;padding:0 5px;border-radius:10px;background:#f4eadc;color:#6b3a18;font-size:12px;font-weight:900;line-height:1;}
+body.pkg345-writing-fullscreen .pkg384Panel{top:50px!important;}
+@media(max-width:700px){
+ .pkg391InlineSize{gap:2px;padding:0 2px;}
+ .pkg391InlineSize .pkg391SizeBtn{width:36px!important;min-width:36px!important;height:36px!important;font-size:12px!important;}
+ .pkg391InlineValue{min-width:42px;height:32px;font-size:11px;}
+ body.pkg345-writing-fullscreen .pkg384Panel{top:46px!important;}
+}
 </style>
 
 <style id="pkg392-writing-size-force-css">
