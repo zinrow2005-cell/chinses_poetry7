@@ -12,9 +12,9 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<meta name="daofa-build-version" content="369" />
+<meta name="daofa-build-version" content="371" />
 <title>胖超詩詞閱讀書寫系統｜首頁</title>
-<link rel="manifest" href="./manifest.webmanifest?pkg=369" />
+<link rel="manifest" href="./manifest.webmanifest?pkg=371" />
 <link rel="icon" sizes="192x192" href="./icons/icon-192.png" />
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
 <script id="pkg369-cache-reset">
@@ -51,20 +51,15 @@
   <div class="seal">胖</div>
   <p class="kicker">DIVA_W 製作</p>
   <h1 class="title">胖超詩詞閱讀書寫系統</h1>
-  <p class="lead">請先停在首頁選擇操作方式；手機或平板也可以自由切換「手機版」或「電腦版頁面」。</p>
+  <p class="lead">只要選「開始閱讀」或「直接書寫」即可，手機與 iPad 會自動使用適合的操作版面。</p>
   <div class="mode"><b>目前版面：</b><span id="modeText">手機／平板版</span></div>
   <div class="actions">
-    <a class="btn primary" href="./reader.html?source=light-home&view=mobile&open=library&pkg=369">進入手機作品庫</a>
-    <a class="btn" href="./reader.html?source=light-home&view=mobile&open=library&pkg=369">先選作品</a>
-    <a class="btn" href="./writing.html?source=light-home&pkg=369">直接書寫練習</a>
+    <a class="btn primary" href="./reader.html?source=mobile-home&view=mobile&open=library&pkg=371">開始閱讀／選作品</a>
+    <a class="btn" href="./writing.html?source=mobile-home&pkg=371">直接書寫</a>
   </div>
-  <div class="switches">
-    <a class="btn" href="./reader.html?source=light-switch&view=mobile&open=library&pkg=369">使用手機／平板版</a>
-    <a class="btn" href="./reader.html?source=light-switch&view=desktop&open=read&pkg=369">使用電腦版頁面</a>
-  </div>
-  <p class="hint">此首頁不再使用大型主程式或全域點擊攔截，按鈕是原生連結；即使手機尚未載入 JavaScript，也會直接跳轉。</p>
-  <p class="reset">PKG369 已自動清除舊 PWA 快取與舊 Service Worker，避免手機繼續吃到舊首頁。</p>
-  <div class="small">PKG369｜首頁原生連結＋移除快取干擾實測版</div>
+  <p class="hint">主要操作縮成兩個入口，減少重複選擇與多餘步驟。</p>
+  <p class="reset"></p>
+  <div class="small">PKG371｜跨裝置操作精簡版</div>
 </main>
 <noscript><p style="position:fixed;left:12px;right:12px;bottom:12px;background:#fff;padding:10px;border:1px solid #d9b98b;border-radius:12px;text-align:center">JavaScript 關閉時仍可點上方連結進入系統。</p></noscript>
 
@@ -138,6 +133,11 @@ img,video,canvas{max-width:100%;}
   });
 })();
 </script>
+
+
+<style id="pkg371-home-flow-css">
+@media(max-width:640px){.card,.home{max-height:calc(100dvh - 16px);overflow:auto;-webkit-overflow-scrolling:touch}.choiceRow,.actions{gap:12px}.btn{min-height:52px!important}}
+</style>
 
 </body>
 </html>

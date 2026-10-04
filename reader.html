@@ -106297,7 +106297,7 @@ body.daofaHomeMode .mobileBottomNav{display:none!important;}
       if(e.target.closest&&e.target.closest('.favStarBtn'))return;
       var i=itemIndex(item); e.preventDefault(); e.stopImmediatePropagation();
       try{if(typeof window.selectPoem==='function')window.selectPoem(i);else if(window.state)state.selected=i;}catch(err){}
-      setTimeout(function(){openPreview(i);},20); keepBottom();
+      setTimeout(function(){document.body.classList.remove('mobileShowLibrary','mobileShowFilters','mobileDialogOpen');try{if(window.DaofaMobile&&DaofaMobile.go)DaofaMobile.go('read');}catch(_e){}keepBottom();},20);
     },true);
   }
   function openRequested(){
@@ -106482,6 +106482,99 @@ img,video,canvas{max-width:100%;}
   });
 })();
 </script>
+
+
+<!-- PKG371｜操作流暢與跨裝置遮擋收斂 -->
+<style id="pkg371-layout-flow-fix-css">
+:root{--pkg371-safe-top:env(safe-area-inset-top,0px);--pkg371-safe-bottom:env(safe-area-inset-bottom,0px);}
+html,body{overscroll-behavior:none;}
+button,a,[role="button"]{min-height:42px;}
+@media (pointer:coarse){button,a,[role="button"]{min-height:44px;}}
+/* 閱讀頁：內容、抽屜、底部導覽共用同一個安全區，避免互相覆蓋 */
+body.daofaMobileMode{--daofa-mobile-nav-h:66px!important;height:100dvh!important;min-height:100svh!important;overflow:hidden!important;}
+body.daofaMobileMode .app{height:100dvh!important;min-height:100svh!important;padding:8px 8px calc(var(--daofa-mobile-nav-h) + var(--pkg371-safe-bottom) + 16px)!important;overflow:hidden!important;}
+body.daofaMobileMode .main{height:calc(100dvh - var(--daofa-mobile-nav-h) - var(--pkg371-safe-bottom) - 24px)!important;min-height:0!important;overflow:hidden!important;border-radius:20px!important;}
+body.daofaMobileMode .reader{height:100%!important;min-height:0!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;}
+body.daofaMobileMode .content{flex:1 1 auto!important;min-height:0!important;overflow-y:auto!important;overflow-x:hidden!important;padding-bottom:20px!important;scroll-padding-bottom:20px!important;}
+body.daofaMobileMode .mobileBottomNav{bottom:calc(7px + var(--pkg371-safe-bottom))!important;width:min(96vw,620px)!important;max-width:calc(100vw - 12px)!important;}
+body.daofaMobileMode .sidebar,body.daofaMobileMode .library{top:calc(var(--pkg371-safe-top) + 8px)!important;bottom:calc(var(--daofa-mobile-nav-h) + var(--pkg371-safe-bottom) + 16px)!important;max-height:none!important;height:auto!important;}
+body.daofaMobileMode .mobilePanelTitle{top:0!important;}
+.daofaPoemPreviewMask{padding-bottom:calc(var(--daofa-mobile-nav-h,66px) + var(--pkg371-safe-bottom) + 16px)!important;}
+@media(max-width:430px){body.daofaMobileMode{--daofa-mobile-nav-h:62px!important;}body.daofaMobileMode .mobileBottomNav button{font-size:10px!important;}}
+@media(min-width:700px) and (max-width:1100px){body.daofaMobileMode .main{border-radius:24px!important;}body.daofaMobileMode .mobileBottomNav{width:min(760px,94vw)!important;}}
+/* 書寫頁：浮動工具列必須有保留空間，不再壓住畫布 */
+@media(max-width:900px){
+  body:not(.daofaMobileMode) .page{display:flex!important;flex-direction:column!important;height:100dvh!important;min-height:100svh!important;overflow:hidden!important;padding:calc(6px + var(--pkg371-safe-top)) 7px calc(6px + var(--pkg371-safe-bottom))!important;}
+  .topbar{flex:0 0 auto!important;margin-bottom:6px!important;}
+  .studio{flex:1 1 auto!important;height:auto!important;min-height:0!important;overflow:hidden!important;}
+  .boardCard{height:100%!important;min-height:0!important;padding-bottom:66px!important;overflow:hidden!important;}
+  .writeBoard{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;}
+  #pkg343FloatingMini{bottom:calc(7px + var(--pkg371-safe-bottom))!important;max-width:calc(100vw - 12px)!important;overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch!important;scrollbar-width:none!important;}
+  #pkg343FloatingMini::-webkit-scrollbar{display:none!important;}
+  .diva-credit-chip{display:none!important;}
+  .side{max-height:calc(100dvh - var(--pkg371-safe-top) - 14px)!important;}
+}
+@media(max-width:520px){
+  .boardCard{padding:8px 8px 62px!important;}
+  #pkg343FloatingMini button{min-height:40px!important;padding:7px 10px!important;}
+}
+/* 全螢幕書寫時由專用工具列管理畫布高度，不再額外保留底部迷你工具列空間 */
+body.pkg345-writing-fullscreen .boardCard{padding-bottom:0!important;}
+body.pkg345-writing-fullscreen #pkg343FloatingMini{display:none!important;}
+</style>
+<script id="pkg371-flow-stability-js">
+(function(){
+  function closeTransientPanels(){
+    if(!document.body)return;
+    document.body.classList.remove('mobileShowFilters','mobileShowLibrary','mobileDialogOpen');
+    document.querySelectorAll('.daofaPoemPreviewMask.show,.authorOverlay.show').forEach(function(el){el.classList.remove('show');});
+  }
+  window.addEventListener('pageshow',function(){
+    try{document.documentElement.style.setProperty('--pkg371-vh',(innerHeight*.01)+'px');}catch(e){}
+  });
+  window.addEventListener('resize',function(){
+    try{document.documentElement.style.setProperty('--pkg371-vh',(innerHeight*.01)+'px');}catch(e){}
+  },{passive:true});
+  /* 橫直向切換時先收掉暫時面板，避免舊尺寸的 fixed 面板殘留在新畫面上 */
+  window.addEventListener('orientationchange',function(){setTimeout(closeTransientPanels,120);});
+})();
+</script>
+
+
+<style id="pkg371-tablet-writing-and-display-fix">
+/* 手機 / iPad 不使用浮動 Aa 按鈕，避免蓋到閱讀文字或書寫畫布 */
+@media(max-width:1100px){.daofaDisplayToggle{display:none!important;}
+  body{overflow:hidden;}
+  .page{display:flex!important;flex-direction:column!important;height:100dvh!important;min-height:100svh!important;overflow:hidden!important;padding:calc(7px + env(safe-area-inset-top,0px)) 7px calc(7px + env(safe-area-inset-bottom,0px))!important;}
+  .topbar{position:relative!important;top:auto!important;flex:0 0 auto!important;padding:10px 12px!important;border-radius:20px!important;margin-bottom:7px!important;}
+  .topbar .logo{width:36px!important;height:36px!important;border-radius:14px!important;font-size:18px!important;}
+  .topbar h1{font-size:16px!important;}
+  .topbar p{display:none!important;}
+  .topbar .row{display:none!important;}
+  .studio{display:block!important;flex:1 1 auto!important;height:auto!important;min-height:0!important;overflow:hidden!important;}
+  .boardCard{height:100%!important;min-height:0!important;display:flex!important;flex-direction:column!important;padding:10px 10px 66px!important;border-radius:22px!important;overflow:hidden!important;}
+  .boardHead{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;align-items:center!important;margin-bottom:4px!important;}
+  .boardHead h2{font-size:18px!important;margin:0!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+  .boardHead p{display:none!important;}
+  .writeToolbar{display:none!important;}
+  .pkg343Dock{position:relative!important;top:auto!important;margin:6px 0 8px!important;border-radius:20px!important;padding:8px!important;flex:0 0 auto!important;max-width:100%!important;overflow:hidden!important;}
+  .pkg343DockTop,.pkg343PenShelf,.pkg343SizeShelf{overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch!important;scrollbar-width:none!important;}
+  .pkg343DockTop::-webkit-scrollbar,.pkg343PenShelf::-webkit-scrollbar,.pkg343SizeShelf::-webkit-scrollbar{display:none!important;}
+  .pkg343Dock button{min-height:36px!important;padding:7px 10px!important;font-size:13px!important;white-space:nowrap!important;}
+  .pkg343Tips{display:none!important;}
+  .writeBoard{flex:1 1 auto!important;height:auto!important;min-height:0!important;border-radius:20px!important;overflow:hidden!important;}
+  #pkg343FloatingMini{display:flex!important;bottom:calc(7px + env(safe-area-inset-bottom,0px))!important;}
+  .side{position:fixed!important;z-index:2147483601!important;left:8px!important;right:8px!important;bottom:0!important;top:auto!important;max-height:calc(82dvh - env(safe-area-inset-top,0px))!important;overflow:auto!important;border-radius:24px 24px 0 0!important;padding:18px 14px calc(20px + env(safe-area-inset-bottom,0px))!important;box-shadow:0 -20px 70px rgba(40,24,10,.28)!important;transform:translateY(105%)!important;transition:transform .22s ease!important;background:#fffaf2!important;}
+  .pkg343-settings-open .side{transform:translateY(0)!important;}
+  .pkg343SheetBackdrop{display:block!important;}
+}
+@media(min-width:901px) and (max-width:1100px) and (orientation:landscape){
+  .boardCard{padding-bottom:62px!important;}
+  .pkg343Dock{margin-top:4px!important;margin-bottom:6px!important;}
+  .pkg343PenBtn span:last-child{display:none!important;}
+  .pkg343PenNib{width:24px!important;height:24px!important;}
+}
+</style>
 
 </body>
 </html>
