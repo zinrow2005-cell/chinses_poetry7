@@ -16,6 +16,17 @@
 <title>胖超詩詞閱讀書寫系統｜詩詞閱讀與臨帖書寫</title>
 <meta name="deployment-version" content="PKG369 介面清理版｜手機書寫觸控修正"/>
 <style>
+@font-face{font-family:"DaofaMasaRegular";src:url("fonts/MasaFont-Regular.woff2") format("woff2");font-display:swap;}
+@font-face{font-family:"DaofaChenYuThin";src:url("fonts/ChenYuluoyan-2.0-Thin.ttf") format("truetype");font-display:swap;}
+@font-face{font-family:"DaofaQingSong5";src:url("fonts/JasonHandwriting5.woff2") format("woff2");font-display:swap;}
+
+
+
+
+
+
+
+
 :root{
   --font-kai:"DFKai-SB","BiauKai","KaiTi","STKaiti","Noto Serif TC","PMingLiU",serif;
   --bg:#efe3d3; --panel:#fffaf2; --panel2:#fffdf8; --line:#ead6bd;
@@ -220,6 +231,11 @@ label{font-size:var(--daofa-label-size,12px) !important;}
   .writeToolbar button:hover,.pkg343Dock button:hover{transform:none!important;}
 }
 .writeBoard.pkg373-pen-active{box-shadow:inset 0 0 0 2px rgba(141,70,15,.16),0 18px 60px rgba(68,37,12,.10);}
+
+.traceQuickGrid{grid-template-columns:repeat(4,minmax(0,1fr))!important;}
+.traceQuickGrid button{min-height:44px;white-space:nowrap;}
+.traceQuickGrid button.active{background:linear-gradient(180deg,#b86b27,#8d460f)!important;color:#fff!important;border-color:#9c4b12!important;box-shadow:0 8px 18px rgba(126,70,24,.18)!important;}
+@media(max-width:760px){.traceQuickGrid{grid-template-columns:1fr 1fr!important;}}
 </style>
 
 <script>
@@ -371,6 +387,7 @@ body.pkg345-writing-fullscreen .pkg346Bar{display:none!important;}
   }catch(e){}
 })();
 </script>
+
 </head>
 <body>
 <div class="diva-credit-chip" id="divaCreditChip">製作者 <b>DIVA_W</b></div>
@@ -468,22 +485,22 @@ body.pkg345-writing-fullscreen .pkg346Bar{display:none!important;}
         <h3>臨摹底字與筆刷</h3>
         <label>臨摹底字字型</label>
         <select id="traceFont" onchange="changeTraceFont(this.value)">
-          <option value='"DFKai-SB","BiauKai","KaiTi","STKaiti","Noto Serif TC","PMingLiU",serif'>預設楷書／標楷體</option>
-          <option value='"PMingLiU","MingLiU","Noto Serif TC",serif'>明體</option>
-          <option value='"Microsoft JhengHei","Noto Sans TC",sans-serif'>黑體</option>
-          <option value='"STXingkai","KaiTi","DFKai-SB",serif'>行楷風格</option>
-          <option value='"DaofaUserFont_preset_zhengfeng","DFKai-SB","BiauKai","KaiTi",serif'>正風毛筆（匯入後可用）</option>
-          <option value='"DaofaUserFont_preset_chenyu","DFKai-SB","BiauKai","KaiTi",serif'>辰宇落雁（匯入後可用）</option>
+          <option value='"DFKai-SB","BiauKai","KaiTi","STKaiti","Noto Serif TC","PMingLiU",serif'>楷書／標楷體</option>
+          <option value='"DaofaMasaRegular","DFKai-SB","BiauKai","KaiTi",serif'>正風毛筆</option>
+          <option value='"DaofaChenYuThin","DFKai-SB","BiauKai","KaiTi",serif'>辰宇落雁</option>
+          <option value='"DaofaQingSong5","DFKai-SB","BiauKai","KaiTi",serif'>清松手寫</option>
         </select>
         <div class="fontManager">
           <div class="smallNote">可新增 .ttf、.otf、.woff、.woff2，也可直接選擇 ZIP 匯入；系統會自動從 ZIP 中挑出可用字型。字型保存在目前瀏覽器的 IndexedDB，不需要金鑰；換電腦或清除網站資料後需重新上傳。</div>
-          <div class="presetFontBox">
-            <h4>常用書寫字型快速匯入</h4>
-            <div class="presetFontGrid">
-              <button type="button" onclick="preparePresetFont('zhengfeng')">匯入正風毛筆</button>
-              <button type="button" onclick="preparePresetFont('chenyu')">匯入辰宇落雁</button>
+          <div class="presetFontBox traceQuickBox">
+            <h4>一鍵切換臨摹字體</h4>
+            <div class="presetFontGrid traceQuickGrid">
+              <button type="button" data-trace-quick="kai" onclick="applyQuickTraceFont('kai')">楷書</button>
+              <button type="button" data-trace-quick="masa" onclick="applyQuickTraceFont('masa')">正風毛筆</button>
+              <button type="button" data-trace-quick="chenyu" onclick="applyQuickTraceFont('chenyu')">辰宇落雁</button>
+              <button type="button" data-trace-quick="qingsong" onclick="applyQuickTraceFont('qingsong')">清松手寫</button>
             </div>
-            <div class="presetFontTip">可選擇你原本的「正風毛筆字體.zip」或「辰宇落雁體.zip」。匯入後會直接出現在上方「臨摹底字字型」選單。</div>
+            <div class="presetFontTip">平常練字直接點四個按鈕即可；上方下拉選單仍保留正風粗細與辰宇等寬等進階選擇。</div>
           </div>
           <div class="fontSlotRow">
             <select id="fontSlot" onchange="handleFontSlotChange(this.value)">
@@ -541,14 +558,13 @@ body.pkg345-writing-fullscreen .pkg346Bar{display:none!important;}
   <div class="displayBox">
     <h4>系統字體</h4>
     <select id="daofaFontSelect" onchange="DaofaDisplay.update({font:this.value})">
-      <option value="kai">楷書／標楷體</option>
-      <option value="ming">明體</option>
-      <option value="hei">黑體</option>
-      <option value="round">圓潤系統字</option>
-      <option value="xingkai">行楷風格</option>
-    </select>
+<option value="kai">楷書／標楷體</option>
+<option value="masaR">正風毛筆</option>
+<option value="chenyu">辰宇落雁</option>
+<option value="qingsong">清松手寫</option>
+</select>
     <div class="fontPreview" id="daofaFontPreview">胖超詩詞書寫，筆墨成章。春眠不覺曉，處處聞啼鳥。</div>
-    <div class="tip">系統字體只影響閱讀頁、介面與一般內文；書寫頁的臨摹底字字型請到書寫頁字型管理與下拉選單設定。</div>
+    <div class="tip">系統字體只影響閱讀頁、介面與一般內文；書寫頁的臨摹底字字型可直接用四個一鍵按鈕切換楷書、正風毛筆、辰宇落雁與清松手寫。</div>
   </div>
   <div class="displayBox">
     <h4>字體大小</h4>
@@ -104406,6 +104422,7 @@ function init(){
   bindWritingControls();
   initWritingTools();
   loadCustomTraceFonts().catch(err=>{console.warn('custom font load failed',err); renderCustomFontList('自訂字型載入失敗，可重新載入或重新上傳。');});
+  syncQuickTraceButtons(writeState.font);
   window.addEventListener('resize',()=>{updateFullWritingBoardHeight(); setupWritingCanvas(true);});
 }
 function bindWritingControls(){
@@ -104717,7 +104734,7 @@ async function addCustomTraceFont(){
 }
 async function deleteCustomTraceFont(id){const target=customTraceFonts.find(f=>f.id===id);try{await fontDBDelete(id);if(writeState.font===customFontValue(id)){writeState.font=DEFAULT_KAI_FONT;try{localStorage.setItem('daofaTraceFontValue',DEFAULT_KAI_FONT);}catch(e){}}await loadCustomTraceFonts();const sel=$('traceFont');if(sel)sel.value=writeState.font;renderWritingGuide();setWriteStatus(`已刪除自訂字型：${target?.name||''}`);}catch(err){console.error(err);setWriteStatus(err.message||'刪除字型失敗');}}
 
-function changeTraceFont(font){writeState.font=font||DEFAULT_KAI_FONT;try{localStorage.setItem('daofaTraceFontValue',writeState.font);}catch(e){}renderWritingGuide();let msg='臨摹底字字型已切換';if(writeState.font.includes('DaofaUserFont_preset_zhengfeng')&&!presetFontLoaded('zhengfeng'))msg='已選正風毛筆；尚未匯入時會先以楷書代替，請在字型管理匯入。';if(writeState.font.includes('DaofaUserFont_preset_chenyu')&&!presetFontLoaded('chenyu'))msg='已選辰宇落雁；尚未匯入時會先以楷書代替，請在字型管理匯入。';setWriteStatus(msg);}
+function changeTraceFont(font){writeState.font=font||DEFAULT_KAI_FONT;try{localStorage.setItem('daofaTraceFontValue',writeState.font);}catch(e){}renderWritingGuide();syncQuickTraceButtons(writeState.font);let msg='臨摹底字字型已切換';if(writeState.font.includes('DaofaUserFont_preset_zhengfeng')&&!presetFontLoaded('zhengfeng'))msg='已選正風毛筆；尚未匯入時會先以楷書代替，請在字型管理匯入。';if(writeState.font.includes('DaofaUserFont_preset_chenyu')&&!presetFontLoaded('chenyu'))msg='已選辰宇落雁；尚未匯入時會先以楷書代替，請在字型管理匯入。';setWriteStatus(msg);}
 function setGuideOpacity(v){document.documentElement.style.setProperty('--guide-opacity',v); $('opacityVal').textContent=Number(v).toFixed(2);}
 function toggleGrid(v){$('writeBoard').classList.toggle('grid',v==='on');}
 function setWriteStatus(text){$('writeStatus').textContent=text||'書寫板待命';}
@@ -104738,6 +104755,17 @@ function initWritingTools(){
   renderPaletteGrid();
   updateWritingToolUI();
 }
+const QUICK_TRACE_FONTS={
+  kai:DEFAULT_KAI_FONT,
+  masa:'"DaofaMasaRegular","DFKai-SB","BiauKai","KaiTi",serif',
+  chenyu:'"DaofaChenYuThin","DFKai-SB","BiauKai","KaiTi",serif',
+  qingsong:'"DaofaQingSong5","DFKai-SB","BiauKai","KaiTi",serif'
+};
+function quickTraceKeyForValue(v){v=String(v||'');if(v.includes('DaofaMasa'))return 'masa';if(v.includes('DaofaChenYu'))return 'chenyu';if(v.includes('DaofaQingSong5'))return 'qingsong';return 'kai';}
+function syncQuickTraceButtons(v){const key=quickTraceKeyForValue(v||writeState.font);document.querySelectorAll('[data-trace-quick]').forEach(b=>b.classList.toggle('active',b.dataset.traceQuick===key));}
+function applyQuickTraceFont(key){const value=QUICK_TRACE_FONTS[key]||DEFAULT_KAI_FONT;const sel=$('traceFont');if(sel&&Array.from(sel.options).some(o=>o.value===value))sel.value=value;changeTraceFont(value);syncQuickTraceButtons(value);}
+document.addEventListener('daofa-fonts-ready',()=>{renderWritingGuide();syncQuickTraceButtons(writeState.font);});
+
 function writingPaletteColors(){return ['#23140b','#000000','#5b2a13','#8d460f','#b86b27','#7a1f16','#1f3a2d','#1f4d6b','#4a3a7a','#ffffff','#d8c1a0','#f3dfc2'];}
 function renderPaletteGrid(){
   const grid=$('pkg332PaletteGrid'); if(!grid) return;
@@ -105118,10 +105146,9 @@ setTimeout(()=>{const b=$('focusWritingBtn'); if(b){b.classList.add('pkg330-focu
   const KEY='daofaDisplaySettingsV1';
   const fontStacks={
     kai:'"DFKai-SB","BiauKai","KaiTi","STKaiti","Noto Serif TC","PMingLiU",serif',
-    ming:'"PMingLiU","MingLiU","Noto Serif TC",serif',
-    hei:'"Microsoft JhengHei","Noto Sans TC",Arial,sans-serif',
-    round:'"Yu Gothic","Microsoft JhengHei","Noto Sans TC",Arial,sans-serif',
-    xingkai:'"STXingkai","KaiTi","DFKai-SB","BiauKai",serif'
+    masaR:'"DaofaMasaRegular","DFKai-SB","BiauKai","KaiTi",serif',
+    chenyu:'"DaofaChenYuThin","DFKai-SB","BiauKai","KaiTi",serif',
+    qingsong:'"DaofaQingSong5","DFKai-SB","BiauKai","KaiTi",serif'
   };
   const defaults={font:'kai',ui:100,poem:100,writing:100};
   function num(v,fallback,min,max){v=Number(v);if(!Number.isFinite(v))v=fallback;return Math.max(min,Math.min(max,v));}
@@ -107360,7 +107387,7 @@ body.pkg345-writing-fullscreen #pkg343FloatingMini{display:none!important;}
 </script>
 
 
-<!-- PKG375｜實際練字流程與防誤觸：單擊切字不丟稿、快速連按防抖、旋轉保筆跡 -->
+<!-- PKG376｜實際練字流程與防誤觸：單擊切字不丟稿、快速連按防抖、旋轉保筆跡 -->
 <style id="pkg375-safe-practice-css">
 #pkg375DraftState{display:inline-flex;align-items:center;gap:5px;min-height:30px;padding:5px 9px;border-radius:999px;background:#f7ead7;border:1px solid #e1c49b;color:#76502d;font-size:12px;font-weight:900;white-space:nowrap}
 #pkg375DraftState[data-state="saved"]{background:#eef5e9;border-color:#c9d9be;color:#42623a}
@@ -107372,7 +107399,7 @@ body.pkg345-writing-fullscreen #pkg343FloatingMini{display:none!important;}
 <script id="pkg375-safe-practice-js">
 (function(){
   'use strict';
-  var VERSION='PKG375-safe-practice-20261004';
+  var VERSION='PKG376-safe-practice-20261004';
   var drafts=new Map(), navLocked=false, lastNavAt=0, rotateTimer=0, lastStrokeCount=0, internalSwitch=false;
   function q(id){return document.getElementById(id)}
   function clone(v){try{return structuredClone(v)}catch(e){try{return JSON.parse(JSON.stringify(v))}catch(x){return []}}}
@@ -107480,5 +107507,88 @@ body.pkg345-writing-fullscreen #pkg343FloatingMini{display:none!important;}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init,1850)},{once:true});else setTimeout(init,1850);
 })();
 </script>
+
+
+<!-- PKG376｜書寫成果與連續練習：完成縮圖、整首進度、畫布外成果列 -->
+<style id="pkg376-results-css">
+.pkg376Summary{display:flex;align-items:center;gap:10px;margin:8px 0 0;padding:8px 10px;border:1px solid #e2c7a0;background:rgba(255,252,247,.97);border-radius:16px;position:relative;z-index:4}
+.pkg376SummaryText{min-width:0;flex:1;display:flex;align-items:center;gap:10px}.pkg376Count{font-weight:900;color:#6f3c16;white-space:nowrap}.pkg376MiniBar{height:8px;min-width:90px;flex:1;max-width:260px;background:#ead8bf;border-radius:999px;overflow:hidden}.pkg376MiniBar>i{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,#c17b38,#8d460f);transition:width .2s ease}
+.pkg376Toggle{min-height:38px;padding:7px 12px;border-radius:12px;font-weight:900;white-space:nowrap}.pkg376Toggle[aria-expanded="true"]{background:#8d460f;color:#fff;border-color:#8d460f}
+.pkg376Panel{display:none;margin:7px 0 0;padding:10px;border:1px solid #ead6b8;background:#fffaf2;border-radius:16px}.pkg376Panel.open{display:block}.pkg376PanelHead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}.pkg376PanelHead strong{font-size:14px;color:#6f3c16}.pkg376PanelHead span{font-size:12px;color:#8a6a4c}
+.pkg376Cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;max-height:286px;overflow:auto;padding:1px}.pkg376Card{appearance:none;border:1px solid #e1c9a8;background:#fff;border-radius:13px;padding:6px;min-width:0;text-align:center;box-shadow:0 3px 10px rgba(75,45,20,.05);position:relative}.pkg376Card.done{border-color:#b8cfaa;background:#fbfff8}.pkg376Card.current{outline:3px solid rgba(184,107,39,.22);border-color:#b86b27}.pkg376Thumb{width:100%;aspect-ratio:1/1;border-radius:9px;background:#faf5ec;display:block;object-fit:contain;border:1px solid #eee0cc}.pkg376Placeholder{width:100%;aspect-ratio:1/1;border-radius:9px;background:linear-gradient(135deg,#fbf6ee,#f2e5d3);display:grid;place-items:center;border:1px solid #eee0cc;color:#c2a17b;font-size:30px;font-weight:900}.pkg376CardMeta{display:flex;justify-content:center;align-items:center;gap:5px;margin-top:5px;font-size:11px;color:#7b5a3d;font-weight:800}.pkg376Char{font-size:17px;color:#5c3214;font-weight:900}.pkg376DoneDot{width:7px;height:7px;border-radius:50%;background:#bfa98d}.pkg376Card.done .pkg376DoneDot{background:#5f8c50}
+@media(max-width:700px){.pkg376Summary{padding:7px 8px;gap:7px}.pkg376Count{font-size:12px}.pkg376MiniBar{min-width:58px}.pkg376Toggle{min-height:36px;padding:6px 9px;font-size:12px}.pkg376Cards{display:flex;overflow-x:auto;overflow-y:hidden;max-height:none;scroll-snap-type:x proximity;padding-bottom:4px}.pkg376Card{flex:0 0 88px;scroll-snap-align:start}.pkg376Panel{padding:8px}.pkg376PanelHead span{display:none}}
+@media(max-height:700px) and (orientation:landscape) and (max-width:1100px){.pkg376Summary{margin-top:5px;padding:5px 7px}.pkg376Panel{padding:6px}.pkg376Card{flex-basis:76px}.pkg376Cards{gap:6px}}
+</style>
+<script id="pkg376-results-js">
+(function(){
+  'use strict';
+  var VERSION='PKG376-results-20261004';
+  var results=new Map(), thumbTimer=0, panelOpen=false;
+  function q(id){return document.getElementById(id)}
+  function clone(v){try{return structuredClone(v)}catch(e){try{return JSON.parse(JSON.stringify(v))}catch(x){return []}}}
+  function poemName(){try{var p=selectedPoem();return String((p&&p.title)||writeState.selected||'poem')}catch(e){return String(writeState.selected||'poem')}}
+  function units(){try{return writeState.mode==='char'?poemCharsForWriting():writeState.mode==='sentence'?poemSentenceUnitsForWriting():[currentWriteText()]}catch(e){return []}}
+  function idx(){return writeState.mode==='char'?(writeState.charIndex||0):writeState.mode==='sentence'?(writeState.lineIndex||0):0}
+  function key(i){return [poemName(),writeState.mode,i==null?idx():i].join('::')}
+  function hasInk(){return !!(writeState&&writeState.strokeRecords&&writeState.strokeRecords.length)}
+  function makeThumb(){
+    var src=q('writingCanvas'); if(!src||!hasInk())return '';
+    try{
+      var c=document.createElement('canvas');c.width=132;c.height=132;var x=c.getContext('2d');
+      x.fillStyle='#fffaf2';x.fillRect(0,0,132,132);
+      x.strokeStyle='rgba(145,91,43,.16)';x.lineWidth=1;x.strokeRect(.5,.5,131,131);x.beginPath();x.moveTo(66,2);x.lineTo(66,130);x.moveTo(2,66);x.lineTo(130,66);x.stroke();
+      x.drawImage(src,0,0,132,132); return c.toDataURL('image/webp',.72);
+    }catch(e){try{return src.toDataURL('image/png')}catch(x){return ''}}
+  }
+  function captureCurrent(force){
+    if(!window.writeState)return;
+    var k=key(), rec=(writeState.strokeRecords||[]);
+    if(!rec.length){results.delete(k);refresh();return}
+    var old=results.get(k)||{}; var thumb=makeThumb()||old.thumb||'';
+    results.set(k,{thumb:thumb,strokes:clone(rec),updated:Date.now()});
+    refresh();
+  }
+  function build(){
+    if(q('pkg376Summary')||!q('pkg374PracticeRail'))return;
+    var box=document.createElement('div');box.id='pkg376Summary';box.className='pkg376Summary';
+    box.innerHTML='<div class="pkg376SummaryText"><span id="pkg376Count" class="pkg376Count">完成 0 / 0</span><span class="pkg376MiniBar"><i id="pkg376Bar"></i></span></div><button type="button" id="pkg376Toggle" class="pkg376Toggle" aria-expanded="false">查看成果</button>';
+    var panel=document.createElement('section');panel.id='pkg376Panel';panel.className='pkg376Panel';panel.setAttribute('aria-label','本首練習成果');panel.innerHTML='<div class="pkg376PanelHead"><strong>本首練習成果</strong><span>點縮圖可直接回到該字繼續寫</span></div><div id="pkg376Cards" class="pkg376Cards"></div>';
+    q('pkg374PracticeRail').insertAdjacentElement('afterend',box);box.insertAdjacentElement('afterend',panel);
+    q('pkg376Toggle').addEventListener('click',function(){panelOpen=!panelOpen;panel.classList.toggle('open',panelOpen);this.setAttribute('aria-expanded',String(panelOpen));this.textContent=panelOpen?'收起成果':'查看成果';if(panelOpen)renderCards()});
+  }
+  function completedCount(){var arr=units(),n=0;for(var i=0;i<arr.length;i++){if(results.has(key(i)))n++}return {done:n,total:arr.length}}
+  function refresh(){
+    if(!q('pkg376Summary'))return;var c=completedCount();q('pkg376Count').textContent='完成 '+c.done+' / '+c.total;q('pkg376Bar').style.width=(c.total?Math.round(c.done/c.total*100):0)+'%';if(panelOpen)renderCards();
+  }
+  function jumpTo(i){
+    captureCurrent(true);
+    try{
+      if(writeState.mode==='char')writeState.charIndex=i;else if(writeState.mode==='sentence')writeState.lineIndex=i;else return;
+      renderWritingGuide();
+      var item=results.get(key(i));writeState.strokeRecords=item&&item.strokes?clone(item.strokes):[];writeState.currentStroke=null;writeState.currentSnapshot=null;replayWritingStrokes();
+      try{localStorage.setItem('daofaPkg375Progress:'+poemName(),JSON.stringify({mode:writeState.mode,charIndex:writeState.charIndex||0,lineIndex:writeState.lineIndex||0,t:Date.now()}))}catch(e){}
+      try{window.pkg374Sync&&window.pkg374Sync()}catch(e){}
+      refresh();
+      q('writeBoard')&&q('writeBoard').scrollIntoView({block:'nearest',behavior:'smooth'});
+    }catch(e){}
+  }
+  function renderCards(){
+    var wrap=q('pkg376Cards');if(!wrap)return;var arr=units(),cur=idx();wrap.innerHTML='';
+    arr.forEach(function(t,i){
+      var item=results.get(key(i));var b=document.createElement('button');b.type='button';b.className='pkg376Card'+(item?' done':'')+(i===cur?' current':'');b.setAttribute('aria-label','第 '+(i+1)+' 個：'+String(t));
+      var visual=item&&item.thumb?'<img class="pkg376Thumb" alt="" src="'+item.thumb+'">':'<div class="pkg376Placeholder">'+String(t||'').replace(/[<>&]/g,'') .slice(0,2)+'</div>';
+      b.innerHTML=visual+'<div class="pkg376CardMeta"><i class="pkg376DoneDot"></i><span class="pkg376Char">'+String(t||'').replace(/[<>&]/g,'').slice(0,3)+'</span><span>'+(i+1)+'</span></div>';
+      b.addEventListener('click',function(){jumpTo(i)});wrap.appendChild(b);
+    });
+  }
+  function wrapNav(name){var old=window[name];if(typeof old!=='function'||old.__pkg376)return;var fn=function(){captureCurrent(true);var r=old.apply(this,arguments);setTimeout(refresh,40);return r};fn.__pkg376=true;window[name]=fn;try{globalThis[name]=fn}catch(e){}}
+  function wrapMode(){var old=window.setWriteMode;if(typeof old!=='function'||old.__pkg376)return;var fn=function(){captureCurrent(true);var r=old.apply(this,arguments);setTimeout(refresh,50);return r};fn.__pkg376=true;window.setWriteMode=fn;try{globalThis.setWriteMode=fn}catch(e){}}
+  function wrapPoem(){var old=window.selectPoemByIndex;if(typeof old!=='function'||old.__pkg376)return;var fn=function(){captureCurrent(true);var r=old.apply(this,arguments);setTimeout(refresh,70);return r};fn.__pkg376=true;window.selectPoemByIndex=fn;try{globalThis.selectPoemByIndex=fn}catch(e){}}
+  function watchStroke(){var c=q('writingCanvas');if(!c)return;c.addEventListener('pointerup',function(){clearTimeout(thumbTimer);thumbTimer=setTimeout(function(){captureCurrent(false)},140)},{passive:true})}
+  function init(){build();wrapNav('nextWriteUnit');wrapNav('prevWriteUnit');wrapMode();wrapPoem();watchStroke();captureCurrent(false);document.documentElement.dataset.pkg376=VERSION;window.addEventListener('pagehide',function(){captureCurrent(true)},{passive:true})}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(init,2200)},{once:true});else setTimeout(init,2200);
+})();
+</script>
+
 </body>
 </html>

@@ -1,0 +1,21 @@
+PKG377｜內建書寫字型整合版
+
+本版調整：
+1. 已將使用者提供的「正風毛筆字體」與「辰宇落雁體」整合進系統。
+2. writing.html：臨摹底字字型下拉選單新增 7 個內建字型選項。
+3. writing.html：快速套用區改為直接套用內建正風／辰宇，不需再上傳 ZIP。
+4. reader.html、writing.html：字體與大小設定的系統字體選單新增正風／辰宇全系列。
+5. 新增 fonts/ 內建字型檔：
+   - MasaFont-ExtraLight.woff2
+   - MasaFont-Light.woff2
+   - MasaFont-Regular.woff2
+   - MasaFont-Medium.ttf
+   - MasaFont-Bold.woff2
+   - ChenYuluoyan-2.0-Thin.ttf
+   - ChenYuluoyan-Thin-Monospaced.ttf
+6. 已更新 service-worker.js 版本字樣為 377。
+
+檢查結果：
+- writing.html JavaScript 語法：通過
+- reader.html JavaScript 語法：通過
+- 本機字型檔案存在：通過

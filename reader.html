@@ -50,6 +50,17 @@ html.daofaPreMobile:not(.daofaPreReady) body{overflow:hidden!important;backgroun
 })();
 </script>
 <style>
+@font-face{font-family:"DaofaMasaRegular";src:url("fonts/MasaFont-Regular.woff2") format("woff2");font-display:swap;}
+@font-face{font-family:"DaofaChenYuThin";src:url("fonts/ChenYuluoyan-2.0-Thin.ttf") format("truetype");font-display:swap;}
+@font-face{font-family:"DaofaQingSong5";src:url("fonts/JasonHandwriting5.woff2") format("woff2");font-display:swap;}
+
+
+
+
+
+
+
+
 :root{
   --font-kai:"DFKai-SB","BiauKai","KaiTi","STKaiti","Noto Serif TC","PMingLiU",serif;
   --bg:#efe3d3; --panel:#fffaf2; --panel2:#fffdf8; --line:#ead6bd;
@@ -768,6 +779,7 @@ body.daofaHomeMode .mobileBottomNav{display:grid!important;}
   }catch(e){}
 })();
 </script>
+
 </head>
 <body>
 <div class="diva-credit-chip" id="divaCreditChip">製作者 <b>DIVA_W</b></div>
@@ -931,13 +943,12 @@ body.daofaHomeMode .mobileBottomNav{display:grid!important;}
 <h4>系統字體</h4>
 <select id="daofaFontSelect" onchange="DaofaDisplay.update({font:this.value})">
 <option value="kai">楷書／標楷體</option>
-<option value="ming">明體</option>
-<option value="hei">黑體</option>
-<option value="round">圓潤系統字</option>
-<option value="xingkai">行楷風格</option>
+<option value="masaR">正風毛筆</option>
+<option value="chenyu">辰宇落雁</option>
+<option value="qingsong">清松手寫</option>
 </select>
 <div class="fontPreview" id="daofaFontPreview">胖超詩詞書寫，筆墨成章。春眠不覺曉，處處聞啼鳥。</div>
-<div class="tip">系統字體只影響閱讀頁、介面與一般內文；書寫頁的臨摹底字字型請到書寫頁字型管理與下拉選單設定。</div>
+<div class="tip">系統字體已內建正風毛筆、辰宇落雁與清松手寫；書寫頁也提供四個一鍵切換臨摹字體按鈕。</div>
 </div>
 <div class="displayBox">
 <h4>字體大小</h4>
@@ -105500,10 +105511,9 @@ scheduleSyncLibraryHeight();
   const KEY='daofaDisplaySettingsV1';
   const fontStacks={
     kai:'"DFKai-SB","BiauKai","KaiTi","STKaiti","Noto Serif TC","PMingLiU",serif',
-    ming:'"PMingLiU","MingLiU","Noto Serif TC",serif',
-    hei:'"Microsoft JhengHei","Noto Sans TC",Arial,sans-serif',
-    round:'"Yu Gothic","Microsoft JhengHei","Noto Sans TC",Arial,sans-serif',
-    xingkai:'"STXingkai","KaiTi","DFKai-SB","BiauKai",serif'
+    masaR:'"DaofaMasaRegular","DFKai-SB","BiauKai","KaiTi",serif',
+    chenyu:'"DaofaChenYuThin","DFKai-SB","BiauKai","KaiTi",serif',
+    qingsong:'"DaofaQingSong5","DFKai-SB","BiauKai","KaiTi",serif'
   };
   const defaults={font:'kai',ui:100,poem:100,writing:100,mobileTitle:100,mobileTop:100};
   function num(v,fallback,min,max){v=Number(v);if(!Number.isFinite(v))v=fallback;return Math.max(min,Math.min(max,v));}

@@ -1,0 +1,17 @@
+PKG379｜GitHub 輕量四字體版
+
+修正 GitHub 網頁上傳 25MB 單檔限制。
+
+主要調整：
+1. 移除原 PKG378 約 86MB 的 font-assets.js。
+2. 改用 fonts/ 目錄中的獨立 WebFont 檔案，每一檔皆小於 25MB。
+3. 保留四個一鍵字體：楷書／正風毛筆／辰宇落雁／清松手寫。
+4. 正風只保留標準版、辰宇只保留標準版、清松使用 JasonHandwriting5 WOFF2。
+5. GitHub Pages 請上傳『解壓縮後的內容』，不要直接把 ZIP 當網站檔案上傳。
+
+字型檔大小：約
+- MasaFont-Regular.woff2：6.1MB
+- ChenYuluoyan-2.0-Thin.ttf：9.1MB
+- JasonHandwriting5.woff2：3.0MB
+
+全部單檔皆低於 GitHub 網頁版 25MB 限制。
