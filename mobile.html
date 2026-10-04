@@ -14,7 +14,7 @@
 <meta http-equiv="Expires" content="0" />
 <meta name="daofa-build-version" content="371" />
 <title>胖超詩詞閱讀書寫系統｜首頁</title>
-<link rel="manifest" href="./manifest.webmanifest?pkg=376" />
+<link rel="manifest" href="./manifest.webmanifest?pkg=388" />
 <link rel="icon" sizes="192x192" href="./icons/icon-192.png" />
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
 <script id="pkg369-cache-reset">
@@ -41,9 +41,13 @@
 </style>
 <script>
 (function(){
-  function modeText(){var el=document.getElementById('modeText'); if(el) el.textContent=((innerWidth||0)<=1100?'手機／平板版':'電腦寬版可切換');}
+  function modeText(){var el=document.getElementById('modeText'); if(el) el.textContent=((innerWidth||0)<740?'手機版':'平板／電腦三欄版');}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',modeText,{once:true}); else modeText();
 })();
+</script>
+
+<script id="pkg388-ipad-compat-entry">
+(function(){try{var q=new URLSearchParams(location.search);if((innerWidth||0)>=740&&q.get('forceMobile')!=='1'){location.replace('./reader.html?source=legacy-mobile-entry&view=auto&pkg=388');}}catch(e){}})();
 </script>
 </head>
 <body>
@@ -54,7 +58,7 @@
   <p class="lead">只要選「開始閱讀」或「直接書寫」即可，手機與 iPad 會自動使用適合的操作版面。</p>
   <div class="mode"><b>目前版面：</b><span id="modeText">手機／平板版</span></div>
   <div class="actions">
-    <a class="btn primary" href="./reader.html?source=mobile-home&view=mobile&pkg=385">開始閱讀／選作品</a>
+    <a class="btn primary" href="./reader.html?source=mobile-home&view=auto&pkg=388">開始閱讀／選作品</a>
     <a class="btn" href="./writing.html?source=mobile-home&pkg=376">直接書寫</a>
   </div>
   <p class="hint">主要操作縮成兩個入口，減少重複選擇與多餘步驟。</p>

@@ -9,7 +9,7 @@
 <meta content="胖超詩詞書寫" name="apple-mobile-web-app-title"/>
 <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
 <meta content="telephone=no" name="format-detection"/>
-<link href="./manifest.webmanifest" rel="manifest"/>
+<link href="./manifest.webmanifest?pkg=388" rel="manifest"/>
 <link href="./icons/icon-192.png" rel="icon" sizes="192x192" type="image/png"/>
 <link href="./icons/apple-touch-icon.png" rel="apple-touch-icon"/>
 <meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control"/><meta content="no-cache" http-equiv="Pragma"/><meta content="0" http-equiv="Expires"/><meta content="369" name="daofa-build-version"/>
@@ -37,7 +37,7 @@ html.daofaPreMobile:not(.daofaPreReady) body{overflow:hidden!important;backgroun
     var saved=''; try{saved=localStorage.getItem('daofaInterfaceMode')||'';}catch(e){}
     /* PKG385: 裝置寬度優先，避免以前儲存的 mobile 模式讓桌機三欄主頁閃一下後消失 */
     var explicitView=qs.get('view')||'';
-    var mode=explicitView||( ((window.innerWidth||0)<740) ? 'mobile' : 'desktop' );
+    var mode=((window.innerWidth||0)<740||qs.get('forceMobile')==='1')?'mobile':'desktop';
     document.documentElement.classList.add(mode==='desktop'?'daofaPreDesktop':'daofaPreMobile');
     /* PKG369 reader: no homepage overlay in reader.html */
     document.addEventListener('DOMContentLoaded',function(){
@@ -105643,7 +105643,7 @@ function shouldIgnoreNavToggle(el){return !!(el&&el.closest&&el.closest('button,
 function setMobileFavMode(on){try{state.favOnly=!!on; const btn=document.getElementById('favOnlyBtn'); if(btn){btn.textContent=state.favOnly?'★ 顯示全部作品':'★ 我的收藏';btn.classList.toggle('on',!!state.favOnly);} if(typeof renderList==='function')renderList();}catch(e){}}
 document.addEventListener('DOMContentLoaded',()=>{
    const qs=new URLSearchParams(location.search);
-   const useMobile=(qs.get('view')==='mobile') || (qs.get('view')!=='desktop' && innerWidth<740);
+   const useMobile=(innerWidth<740) || (qs.get('forceMobile')==='1');
    if(!useMobile){
      document.body.classList.remove('daofaMobileMode','daofaForceMobile','mobileShowFilters','mobileShowLibrary','mobileNavHidden');
      document.documentElement.classList.remove('daofaPreMobile');
@@ -106460,7 +106460,7 @@ body.daofaMobileMode.mobileShowFilters .sidebar{bottom:calc(var(--daofa-mobile-n
       if((idx<0||!POEMS[idx])&&title&&Array.isArray(POEMS))idx=POEMS.findIndex(function(p){return p&&p.title===title;});
       if(idx>=0&&typeof selectPoem==='function'){selectPoem(idx);}
       if(typeof showTab==='function'){showTab('original',true);}
-      if(document.body&&((qs.get('view')||'')==='mobile'||innerWidth<=1100)){document.body.classList.add('daofaMobileMode');document.body.classList.remove('mobileShowFilters');}
+      if(document.body&&(innerWidth<740||qs.get('forceMobile')==='1')){document.body.classList.add('daofaMobileMode');document.body.classList.remove('mobileShowFilters');}else if(document.body){document.body.classList.remove('daofaMobileMode','daofaForceMobile','mobileShowFilters','mobileShowLibrary','mobileNavHidden');}
     }catch(e){}
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(restore,220);},{once:true}); else setTimeout(restore,220);
@@ -106669,7 +106669,7 @@ body.daofaMobileMode.mobileShowFilters .main,body.daofaMobileMode.mobileShowLibr
 <script id="pkg372-flow-js">
 (function(){
   var PKG='372';
-  function isTouchLayout(){const q=new URLSearchParams(location.search);return q.get('view')==='mobile' || (q.get('view')!=='desktop' && innerWidth<740);}
+  function isTouchLayout(){const q=new URLSearchParams(location.search);return innerWidth<740 || q.get('forceMobile')==='1';}
   function simplifyMobileNav(){
     var nav=document.querySelector('.mobileBottomNav'); if(!nav) return;
     var fav=nav.querySelector('button[data-tab="library"]'); if(fav) fav.remove();
@@ -106736,7 +106736,7 @@ body.daofaMobileMode.mobileShowFilters .main,body.daofaMobileMode.mobileShowLibr
 (function(){
  function stabilize(){
    const qs=new URLSearchParams(location.search);
-   const desktop=innerWidth>=740 && qs.get('view')!=='mobile';
+   const desktop=innerWidth>=740 && qs.get('forceMobile')!=='1';
    if(!desktop||!document.body)return;
    document.body.classList.remove('daofaMobileMode','daofaForceMobile','mobileShowFilters','mobileShowLibrary','mobileNavHidden','mobileDialogOpen','daofaHomeMode');
    document.documentElement.classList.remove('daofaPreMobile','daofaPreHome');
@@ -106782,7 +106782,7 @@ body.daofaMobileMode.mobileShowFilters .main,body.daofaMobileMode.mobileShowLibr
  function apply(){
    if(!document.body)return;
    const q=new URLSearchParams(location.search);
-   const mobile=q.get('view')==='mobile'||(q.get('view')!=='desktop'&&innerWidth<740);
+   const mobile=innerWidth<740||q.get('forceMobile')==='1';
    if(mobile)return;
    document.body.classList.remove('daofaMobileMode','daofaForceMobile','mobileShowFilters','mobileShowLibrary','mobileNavHidden','mobileDialogOpen','daofaHomeMode');
    document.documentElement.classList.remove('daofaPreMobile','daofaPreHome');
@@ -106794,6 +106794,31 @@ body.daofaMobileMode.mobileShowFilters .main,body.daofaMobileMode.mobileShowLibr
  window.addEventListener('orientationchange',()=>setTimeout(apply,180));
  window.addEventListener('resize',()=>setTimeout(apply,120));
  setTimeout(apply,260);
+})();
+</script>
+
+<script id="pkg388-authoritative-layout">
+(function(){
+  function apply(){
+    if(!document.body)return;
+    var q=new URLSearchParams(location.search);
+    var phone=(innerWidth||0)<740 || q.get('forceMobile')==='1';
+    if(phone){
+      document.body.classList.add('daofaMobileMode');
+      document.documentElement.classList.remove('daofaPreDesktop');
+      document.documentElement.classList.add('daofaPreMobile','daofaPreReady');
+    }else{
+      document.body.classList.remove('daofaMobileMode','daofaForceMobile','mobileShowFilters','mobileShowLibrary','mobileNavHidden','mobileDialogOpen','daofaHomeMode');
+      document.documentElement.classList.remove('daofaPreMobile','daofaPreHome');
+      document.documentElement.classList.add('daofaPreDesktop','daofaPreReady');
+    }
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply,{once:true});else apply();
+  window.addEventListener('load',apply,{once:true});
+  window.addEventListener('pageshow',apply);
+  window.addEventListener('orientationchange',function(){setTimeout(apply,120);});
+  var rt;window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(apply,100);});
+  setTimeout(apply,80);setTimeout(apply,350);setTimeout(apply,900);
 })();
 </script>
 </body>

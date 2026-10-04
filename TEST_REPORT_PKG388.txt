@@ -1,0 +1,16 @@
+PKG388｜iPad 主頁入口徹底修正版
+
+根因：
+1. index.html 仍將 <=1100px 的 iPad 寫成 view=mobile。
+2. manifest.webmanifest 的 PWA start_url 仍指向 mobile.html。
+3. 舊版已安裝 PWA 可能仍從 mobile.html 啟動。
+4. reader.html 多段歷史程式仍將 view=mobile 視為強制手機模式。
+
+修正：
+- 手機 <740px 才進手機版。
+- iPad/平板 >=740px 固定三欄閱讀主頁。
+- reader 忽略舊 view=mobile 參數（除非 forceMobile=1）。
+- GitHub 根入口直接進 reader 主頁。
+- PWA start_url 改為 reader.html?view=auto。
+- 舊 mobile.html 在 iPad 上自動轉到 reader 三欄主頁。
+- pageshow / orientationchange / resize 都重新套用正確版面。

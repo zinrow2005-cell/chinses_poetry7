@@ -1,9 +1,9 @@
 {
-  "name": "胖超詩詞閱讀書寫系統 PKG374",
+  "name": "胖超詩詞閱讀書寫系統 PKG388",
   "short_name": "胖超詩詞書寫",
-  "description": "PKG374 書寫手感專項版：單一書寫事件管線、觸控筆防手掌誤觸、輕量向量復原、跨裝置橫直式自由切換。",
+  "description": "PKG388 跨裝置入口修正版：手機使用行動閱讀版，iPad 與電腦直接進入三欄閱讀主頁。",
   "lang": "zh-Hant-TW",
-  "start_url": "./mobile.html?source=pwa&pkg=376",
+  "start_url": "./reader.html?source=pwa&view=auto&pkg=388",
   "scope": "./",
   "id": "./pangchao-poetry-writing-pwa-pkg374",
   "display": "standalone",
@@ -49,7 +49,7 @@
       "name": "開始閱讀",
       "short_name": "閱讀",
       "description": "開啟詩詞閱讀主畫面",
-      "url": "./reader.html?source=shortcut-read&view=mobile&open=library&pkg=376",
+      "url": "./reader.html?source=shortcut-read&view=auto&pkg=388",
       "icons": [
         {
           "src": "./icons/icon-192.png",
@@ -61,7 +61,7 @@
       "name": "書寫練習",
       "short_name": "書寫",
       "description": "直接開啟臨帖書寫頁",
-      "url": "./writing.html?source=shortcut-writing&pkg=376",
+      "url": "./writing.html?source=shortcut-writing&pkg=388",
       "icons": [
         {
           "src": "./icons/icon-192.png",
