@@ -105169,7 +105169,7 @@ function copyOriginal(){navigator.clipboard?.writeText(POEMS[state.selected].ori
 function openWritingPage(){
   const p=POEMS[state.selected]||POEMS[0];
   try{localStorage.setItem('currentWritingPoemTitle',p.title||'');}catch(e){}
-  window.location.href='writing.html?v=369&t='+Date.now()+'&title='+encodeURIComponent(p.title||'');
+  window.location.href='writing.html?v=372&t='+Date.now()+'&title='+encodeURIComponent(p.title||'');
 }
 
 const writeState={mode:'char',charIndex:0,lineIndex:0,font:'\"DFKai-SB\",\"BiauKai\",\"KaiTi\",\"STKaiti\",\"Noto Serif TC\",\"PMingLiU\",serif',drawing:false,lastX:0,lastY:0,lastPoint:null,lastWidth:8,lastTime:0,pointerId:null,bound:false};
@@ -106575,6 +106575,97 @@ body.pkg345-writing-fullscreen #pkg343FloatingMini{display:none!important;}
   .pkg343PenNib{width:24px!important;height:24px!important;}
 }
 </style>
+
+
+<!-- PKG372｜實際操作流程精簡與跨裝置防遮擋 -->
+<style id="pkg372-flow-css">
+:root{--pkg372-nav-h:68px;--pkg372-safe-bottom:env(safe-area-inset-bottom,0px)}
+/* 手機/平板：減少重複控制，只留最常用閱讀動作 */
+body.daofaMobileMode .header{display:none!important}
+body.daofaMobileMode .readerTop .titleRow>.row button:not(#favBtn){display:none!important}
+body.daofaMobileMode .voiceQuickBar button:nth-of-type(2),
+body.daofaMobileMode .voiceQuickBar button:nth-of-type(3),
+body.daofaMobileMode .voiceQuickBar button:nth-of-type(4),
+body.daofaMobileMode .voiceQuickBar button:nth-of-type(6){display:none!important}
+body.daofaMobileMode .voiceQuickBar{display:flex!important;gap:7px!important;overflow-x:auto!important;overflow-y:hidden!important;white-space:nowrap!important;-webkit-overflow-scrolling:touch!important;scrollbar-width:none!important;padding-bottom:3px!important}
+body.daofaMobileMode .voiceQuickBar button{flex:0 0 auto!important;min-height:42px!important}
+body.daofaMobileMode .voiceQuickBar .pkg372QuickWrite{display:inline-flex!important;align-items:center!important;justify-content:center!important;background:linear-gradient(180deg,#b86b27,#8d460f)!important;color:#fff!important;border-color:#8d460f!important}
+/* 底部導覽固定五個入口，避免 6 按鈕塞 5 欄 */
+body.daofaMobileMode .mobileBottomNav{grid-template-columns:repeat(5,minmax(0,1fr))!important}
+body.daofaMobileMode .mobileBottomNav button{min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important}
+/* 抽屜開啟時不讓內容與底列互相壓住 */
+body.daofaMobileMode .sidebar,body.daofaMobileMode .library{z-index:2147483000!important;padding-bottom:calc(16px + var(--pkg372-safe-bottom))!important}
+body.daofaMobileMode.mobileShowFilters .main,body.daofaMobileMode.mobileShowLibrary .main{pointer-events:none!important}
+/* 小螢幕閱讀頁保留完整可視區，不讓內容藏在底列下 */
+@media(max-width:1100px){
+ body.daofaMobileMode .content{padding-bottom:calc(var(--pkg372-nav-h) + var(--pkg372-safe-bottom) + 22px)!important}
+ body.daofaMobileMode .tabs{position:sticky!important;top:0!important;z-index:8!important;background:rgba(255,250,242,.96)!important;backdrop-filter:blur(10px)!important}
+}
+@media(max-width:430px){
+ body.daofaMobileMode .reader{border-radius:16px!important}
+ body.daofaMobileMode .titleRow{gap:8px!important}
+ body.daofaMobileMode .readerTop{padding:10px!important}
+ body.daofaMobileMode .tabs{gap:5px!important;padding:7px!important;overflow-x:auto!important;white-space:nowrap!important;scrollbar-width:none!important}
+ body.daofaMobileMode .tabs .tab{flex:0 0 auto!important;min-height:40px!important}
+}
+</style>
+<script id="pkg372-flow-js">
+(function(){
+  var PKG='372';
+  function isTouchLayout(){return innerWidth<=1100 || (navigator.maxTouchPoints||0)>0;}
+  function simplifyMobileNav(){
+    var nav=document.querySelector('.mobileBottomNav'); if(!nav) return;
+    var fav=nav.querySelector('button[data-tab="library"]'); if(fav) fav.remove();
+    var works=nav.querySelector('button[data-tab="allLibrary"]'); if(works) works.innerHTML='📚<br>作品';
+    var filters=nav.querySelector('button[data-tab="filters"]'); if(filters) filters.innerHTML='🔎<br>篩選';
+    var read=nav.querySelector('button[data-tab="read"]'); if(read) read.innerHTML='📖<br>閱讀';
+    var learning=nav.querySelector('button[data-tab="learning"]'); if(learning) learning.innerHTML='📝<br>學習';
+    var write=nav.querySelector('button[data-tab="write"]'); if(write) write.innerHTML='🖌️<br>書寫';
+  }
+  function addQuickWrite(){
+    var bar=document.querySelector('.voiceQuickBar'); if(!bar || bar.querySelector('.pkg372QuickWrite')) return;
+    var b=document.createElement('button'); b.type='button'; b.className='pkg372QuickWrite'; b.textContent='書寫'; b.onclick=function(){openWritingPage();};
+    var status=bar.querySelector('.voiceStatus'); bar.insertBefore(b,status||null);
+  }
+  function autoCloseLibraryAfterPick(){
+    if(window.__pkg372SelectWrapped || typeof window.selectPoem!=='function') return;
+    window.__pkg372SelectWrapped=true;
+    var orig=window.selectPoem;
+    window.selectPoem=function(i){
+      var out=orig.apply(this,arguments);
+      try{
+        if(document.body.classList.contains('daofaMobileMode') && (document.body.classList.contains('mobileShowLibrary')||document.body.classList.contains('mobileShowFilters'))){
+          document.body.classList.remove('mobileShowLibrary','mobileShowFilters');
+          document.querySelectorAll('.mobileBottomNav button').forEach(function(b){b.classList.toggle('active',b.dataset.tab==='read');});
+          var main=document.querySelector('.main'); if(main) main.scrollTo({top:0,behavior:'smooth'});
+        }
+      }catch(e){}
+      return out;
+    };
+  }
+  function restoreSelectionFromUrl(){
+    try{
+      var q=new URLSearchParams(location.search), title=q.get('title'), idx=Number(q.get('selected'));
+      if(title && Array.isArray(window.POEMS)){
+        var ti=POEMS.findIndex(function(p){return p&&p.title===title;}); if(ti>=0) idx=ti;
+      }
+      if(Number.isFinite(idx)&&idx>=0&&typeof window.selectPoem==='function') window.selectPoem(idx);
+    }catch(e){}
+  }
+  function closePanelsOnResize(){
+    document.body.classList.remove('mobileShowLibrary','mobileShowFilters','mobileDialogOpen');
+    try{toggleSpeechPanel(false);}catch(e){}
+  }
+  function boot(){
+    if(isTouchLayout()) document.body.classList.add('daofaMobileMode');
+    simplifyMobileNav(); addQuickWrite(); autoCloseLibraryAfterPick(); restoreSelectionFromUrl();
+    document.querySelectorAll('.mobileClosePanel').forEach(function(b){b.textContent='返回閱讀';});
+  }
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(boot,30);});
+  window.addEventListener('load',function(){setTimeout(boot,80);});
+  var rt; window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(closePanelsOnResize,180);});
+})();
+</script>
 
 </body>
 </html>

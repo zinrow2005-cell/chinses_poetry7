@@ -106783,7 +106783,7 @@ body.daofa-real-fullscreen-lock{overflow:hidden!important;overscroll-behavior:no
 </style>
 <script id="pkg369-writing-leave-reader-js">
 (function(){
-  var VERSION='369';
+  var VERSION='372';
   function q(sel,root){return (root||document).querySelector(sel);}
   function currentTitle(){
     try{if(typeof selectedPoem==='function'){var p=selectedPoem(); if(p&&p.title)return p.title;}}catch(e){}
@@ -107024,6 +107024,79 @@ body.pkg345-writing-fullscreen #pkg343FloatingMini{display:none!important;}
   .pkg343PenNib{width:24px!important;height:24px!important;}
 }
 </style>
+
+
+<!-- PKG372｜書寫流程精簡、工具列防遮擋 -->
+<style id="pkg372-writing-flow-css">
+:root{--pkg372-safe-top:env(safe-area-inset-top,0px);--pkg372-safe-bottom:env(safe-area-inset-bottom,0px)}
+@media(max-width:1100px),(hover:none) and (pointer:coarse){
+ body .topbar{display:none!important}
+ body .studio{height:100dvh!important;min-height:100svh!important;overflow:hidden!important;padding:calc(6px + var(--pkg372-safe-top)) 6px calc(6px + var(--pkg372-safe-bottom))!important}
+ body .boardCard{height:100%!important;min-height:0!important;display:flex!important;flex-direction:column!important;overflow:hidden!important}
+ body .boardHead{flex:0 0 auto!important;padding:8px 10px!important;gap:8px!important}
+ body .boardHead h2{font-size:clamp(18px,4.8vw,28px)!important;margin:0!important}
+ body .boardHead p{display:none!important}
+ body .writeToolbar{flex:0 0 auto!important;max-height:30vh!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain!important;padding:6px!important}
+ body .toolbarRow{display:flex!important;gap:6px!important;overflow-x:auto!important;overflow-y:hidden!important;white-space:nowrap!important;-webkit-overflow-scrolling:touch!important;scrollbar-width:none!important}
+ body .toolbarRow button,body .toolbarRow select{flex:0 0 auto!important;min-height:42px!important}
+ body .secondaryTools{display:none!important}
+ body.pkg372ShowWritingTools .secondaryTools{display:flex!important}
+ body .writeBoard{flex:1 1 auto!important;min-height:0!important;height:auto!important;overflow:hidden!important}
+ body #pkg343FloatingMini{display:flex!important;left:50%!important;right:auto!important;bottom:calc(7px + var(--pkg372-safe-bottom))!important;transform:translateX(-50%)!important;max-width:calc(100vw - 12px)!important;overflow-x:auto!important;overflow-y:hidden!important;white-space:nowrap!important;scrollbar-width:none!important;z-index:2147483600!important}
+ body #pkg343FloatingMini button{min-width:46px!important;min-height:44px!important;flex:0 0 auto!important}
+ body #daofaDisplayToggle{display:none!important}
+}
+@media(max-width:430px){
+ body .primaryTools #modeSentenceBtn,body .primaryTools #modeFullBtn{display:none!important}
+ body.pkg372ModeMenuOpen .primaryTools #modeSentenceBtn,body.pkg372ModeMenuOpen .primaryTools #modeFullBtn{display:inline-flex!important}
+ body .writeToolbar{max-height:26vh!important}
+}
+</style>
+<script id="pkg372-writing-flow-js">
+(function(){
+  function isTouchLayout(){return innerWidth<=1100 || (navigator.maxTouchPoints||0)>0;}
+  function labelCompact(){
+    var map={prevUnitBtn:'上一個',nextUnitBtn:'下一個',modeCharBtn:'單字',modeSentenceBtn:'句子',modeFullBtn:'全文'};
+    Object.keys(map).forEach(function(id){var e=document.getElementById(id);if(e)e.textContent=map[id];});
+    document.querySelectorAll('button').forEach(function(b){
+      var t=(b.textContent||'').trim(); if(t==='復原上一筆')b.textContent='復原'; if(t==='清本頁')b.textContent='清除';
+    });
+  }
+  function addModeToggle(){
+    if(!isTouchLayout())return;
+    var row=document.querySelector('.primaryTools'); if(!row||document.getElementById('pkg372ModeToggle'))return;
+    var b=document.createElement('button'); b.id='pkg372ModeToggle'; b.type='button'; b.textContent='模式'; b.onclick=function(){document.body.classList.toggle('pkg372ModeMenuOpen');};
+    row.insertBefore(b,row.firstChild);
+  }
+  function addMoreToggle(){
+    if(!isTouchLayout())return;
+    var row=document.querySelector('.primaryTools'); if(!row||document.getElementById('pkg372MoreTools'))return;
+    var b=document.createElement('button'); b.id='pkg372MoreTools'; b.type='button'; b.textContent='筆刷設定'; b.onclick=function(){document.body.classList.toggle('pkg372ShowWritingTools');};
+    row.appendChild(b);
+  }
+  function protectClear(){
+    document.querySelectorAll('button').forEach(function(b){
+      if((b.textContent||'').trim()!=='清除' || b.dataset.pkg372Clear==='1')return;
+      b.dataset.pkg372Clear='1'; var old=b.onclick; b.onclick=null;
+      b.addEventListener('click',function(ev){
+        ev.preventDefault();
+        if(b.dataset.armed==='1'){b.dataset.armed='';b.textContent='清除';if(typeof clearWritingCanvas==='function')clearWritingCanvas();return;}
+        b.dataset.armed='1'; b.textContent='再按一次';
+        setTimeout(function(){if(b.dataset.armed==='1'){b.dataset.armed='';b.textContent='清除';}},1600);
+      });
+    });
+  }
+  function closeTransientOnRotate(){
+    document.body.classList.remove('pkg372ShowWritingTools','pkg372ModeMenuOpen');
+    try{if(document.fullscreenElement && innerWidth<innerHeight && typeof exitWritingFullscreen==='function'){} }catch(e){}
+    setTimeout(function(){try{resizeWritingCanvas(true);}catch(e){}},120);
+  }
+  function boot(){labelCompact();addModeToggle();addMoreToggle();protectClear();}
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(boot,20);});
+  window.addEventListener('load',function(){setTimeout(boot,80);});
+  var tm; window.addEventListener('resize',function(){clearTimeout(tm);tm=setTimeout(closeTransientOnRotate,180);});
+})();
+</script>
 
 </body>
 </html>
