@@ -106538,10 +106538,10 @@ body.pkg345-writing-fullscreen.pkg347-tools-collapsed .boardCard.pkg333Fullscree
       writeState.lastPoint=p; writeState.lastX=mid.x; writeState.lastY=mid.y;
     }
     function up(evt){if(!window.writeState||!writeState.drawing)return;evt.preventDefault&&evt.preventDefault();try{canvas.releasePointerCapture&&canvas.releasePointerCapture(evt.pointerId);}catch(e){}writeState.drawing=false;writeState.pointerId=null;writeState.lastPoint=null;setStatus('待命');}
-    canvas.addEventListener('pointerdown',down,{passive:false});
-    canvas.addEventListener('pointermove',move,{passive:false});
-    canvas.addEventListener('pointerup',up,{passive:false});
-    canvas.addEventListener('pointercancel',up,{passive:false});
+    canvas.addEventListener('pointerdown',down,{capture:true,passive:false});
+    canvas.addEventListener('pointermove',move,{capture:true,passive:false});
+    canvas.addEventListener('pointerup',up,{capture:true,passive:false});
+    canvas.addEventListener('pointercancel',up,{capture:true,passive:false});
     canvas.addEventListener('pointerleave',up,{passive:false});
     canvas.addEventListener('touchstart',function(e){
       if(e.touches&&e.touches[0]){
@@ -107359,7 +107359,7 @@ body.pkg345-writing-fullscreen #pkg343FloatingMini{display:none!important;}
 <!-- PKG373｜最終書寫事件管線：單一 PointerEvent、Pencil 防手掌、向量復原 -->
 <script id="pkg373-final-writing-pipeline">
 (function(){
-  const VERSION='PKG373-final-pipeline-20261004';
+  const VERSION='PKG399-final-pipeline-preserve-canvas';
   const $=id=>document.getElementById(id);
   let installed=false;
   function safe(name,...args){try{const f=window[name];if(typeof f==='function')return f(...args);}catch(e){console.warn(VERSION,name,e)}}
@@ -107371,16 +107371,29 @@ body.pkg345-writing-fullscreen #pkg343FloatingMini{display:none!important;}
     if(installed)return;
     const old=$('writingCanvas'),board=$('writeBoard'); if(!old||!board)return;
     installed=true;
-    // 重新建立 canvas，徹底移除歷代重複 pointer/touch listener，保留原畫面像素。
+    // 重新建立 canvas，徹底移除歷代重複 pointer/touch listener。
+    // PKG399：先保存舊畫布，再完成尺寸校正後回填，避免使用者剛開頁就書寫時被 1.65 秒後的重建清掉筆跡。
+    let snapshot=null;
+    try{
+      snapshot=document.createElement('canvas'); snapshot.width=old.width; snapshot.height=old.height;
+      snapshot.getContext('2d').drawImage(old,0,0);
+    }catch(e){snapshot=null;}
     const canvas=old.cloneNode(false);
-    const ow=old.width,oh=old.height;
-    canvas.width=ow; canvas.height=oh;
-    try{canvas.getContext('2d').drawImage(old,0,0);}catch(e){}
+    canvas.width=old.width; canvas.height=old.height;
     canvas.dataset.pkg373Pipeline='1';
     canvas.style.touchAction='none';canvas.style.userSelect='none';canvas.style.webkitUserSelect='none';
     old.replaceWith(canvas);
     try{writeState.drawing=false;writeState.pointerId=null;writeState.currentStroke=null;writeState.lastPenAt=0;window.writeState=writeState;}catch(e){}
-    safe('resizeWritingCanvas',true); safe('renderWritingGuide');
+    safe('resizeWritingCanvas',true);
+    if(snapshot){
+      try{
+        const ctx=canvas.getContext('2d');
+        ctx.save();
+        ctx.drawImage(snapshot,0,0,snapshot.width,snapshot.height,0,0,canvas.width,canvas.height);
+        ctx.restore();
+      }catch(e){}
+    }
+    safe('renderWritingGuide');
 
     const pointers=new Map();
     const now=()=>performance.now();
@@ -107440,7 +107453,7 @@ body.pkg345-writing-fullscreen #pkg343FloatingMini{display:none!important;}
     document.documentElement.dataset.pkg373Pipeline=VERSION;
   }
   // 等所有舊版修補安裝完再收斂成單一管線。
-  if(document.readyState==='complete')setTimeout(install,1650);else window.addEventListener('load',()=>setTimeout(install,1650),{once:true});
+  if(document.readyState==='complete')setTimeout(install,120);else window.addEventListener('load',()=>setTimeout(install,120),{once:true});
 })();
 </script>
 
@@ -108309,7 +108322,7 @@ body.pkg345-writing-fullscreen #pkg376Panel:not(.show):not([data-open="1"]){disp
 </style>
 <script id="pkg397-mobile-writing-input-js">
 (function(){
-  const VERSION='PKG397-mobile-input';
+  const VERSION='PKG398-mobile-input';
   const oldShould=window.pointerShouldWrite;
   window.pointerShouldWrite=function(evt){
     if(!evt)return false;
@@ -108318,10 +108331,11 @@ body.pkg345-writing-fullscreen #pkg376Panel:not(.show):not([data-open="1"]){disp
     if(type==='touch'){
       if(evt.isPrimary===false)return false;
       const contact=Math.max(Number(evt.width)||0,Number(evt.height)||0);
+      // 純手機手指書寫不可用接觸面積判斷為手掌：許多手機在 move 時會回報 45~70px，
+      // 舊版 contact>42 會造成 pointerdown 畫出一點後，pointermove 全被拒絕。
       if(window.writeState&&writeState.penPointerActive)return false;
-      if(window.writeState&&writeState.lastPenAt&&now-writeState.lastPenAt<75&&contact>18)return false;
-      if(contact>42)return false;
-      // 手機以手指書寫時，不因「全文模式」而拒絕 touch。
+      // 只有剛使用過真正的 pen 時，才以大接觸面積當成手掌排除。
+      if(window.writeState&&writeState.lastPenAt&&now-writeState.lastPenAt<90&&contact>22)return false;
       return true;
     }
     try{return typeof oldShould==='function'?oldShould(evt):true;}catch(e){return true;}
@@ -108380,8 +108394,8 @@ body.pkg345-writing-fullscreen #pkg376Panel:not(.show):not([data-open="1"]){disp
 
   function boot(){
     // PKG373 會在 load 後約 1.65 秒替換 Canvas，因此最後再綁到真正正在使用的 Canvas。
-    setTimeout(installTouchFallback,1850);
-    setTimeout(installTouchFallback,2400);
+    setTimeout(installTouchFallback,360);
+    setTimeout(installTouchFallback,760);
   }
   if(document.readyState==='complete')boot();
   else window.addEventListener('load',boot,{once:true});

@@ -1,0 +1,17 @@
+PKG398｜手機連續筆畫實測修正版
+
+問題根因：
+- PKG397 的 touch 防手掌條件會在 contact > 42px 時拒絕 pointermove。
+- 手機手指拖動時常回報 45~70px，因此 pointerdown 可畫一點，但後續 move 被擋掉。
+
+修正：
+- 純 touch 手指書寫不再用接觸面積門檻阻擋。
+- 只有剛使用過真正 pen 時，才以較大接觸面積判斷手掌。
+- 保留 PointerEvent 優先與 TouchEvent 備援。
+
+實際 Chromium 裝置模擬測試（非僅語法檢查）：
+1. 手機 390x844 / DPR 3：連續 6 筆成功，Canvas 像素增量 98,406，strokeRecords=6。
+2. iPad 直式 768x1024 / DPR 2：連續 6 筆成功，Canvas 像素增量 56,211，strokeRecords=6。
+3. iPad 橫式 1024x768 / DPR 2：連續 6 筆成功，Canvas 像素增量 78,964，strokeRecords=6。
+4. 額外測試接觸寬度 60~65px touch：pointerShouldWrite=true，可正常連續拖線。
+5. 快速連續 4 筆立即落筆測試成功，未出現只畫起點或等待 1 秒的情形。
