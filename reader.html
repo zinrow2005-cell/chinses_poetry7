@@ -106821,6 +106821,163 @@ body.daofaMobileMode.mobileShowFilters .main,body.daofaMobileMode.mobileShowLibr
   setTimeout(apply,80);setTimeout(apply,350);setTimeout(apply,900);
 })();
 </script>
+
+
+<!-- PKG405｜手機/iPad 底部工具列與 AI 朗讀入口統一修正版 -->
+<style id="pkg405-mobile-nav-stable-css">
+@media (max-width:1100px){
+  body.daofaMobileMode{--pkg405-nav-h:68px!important;}
+  body.daofaMobileMode .mobileBottomNav{
+    position:fixed!important;left:50%!important;right:auto!important;top:auto!important;
+    bottom:calc(8px + env(safe-area-inset-bottom,0px))!important;
+    width:min(96vw,680px)!important;max-width:calc(100vw - 12px)!important;
+    height:var(--pkg405-nav-h)!important;min-height:var(--pkg405-nav-h)!important;max-height:var(--pkg405-nav-h)!important;
+    display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;grid-template-rows:1fr!important;
+    gap:5px!important;padding:6px!important;margin:0!important;
+    border-radius:20px!important;background:rgba(58,37,24,.96)!important;
+    box-shadow:0 -10px 30px rgba(40,24,12,.22)!important;
+    transform:translateX(-50%)!important;transition:none!important;
+    opacity:1!important;visibility:visible!important;pointer-events:auto!important;
+    overflow:hidden!important;z-index:2147483500!important;
+  }
+  body.daofaMobileMode .mobileBottomNav button{
+    appearance:none!important;-webkit-appearance:none!important;
+    width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;
+    display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;
+    gap:3px!important;margin:0!important;padding:4px 1px!important;
+    border:0!important;border-radius:14px!important;
+    background:transparent!important;color:#fffaf2!important;
+    font:800 10.5px/1.05 system-ui,-apple-system,"PingFang TC","Noto Sans TC",sans-serif!important;
+    white-space:nowrap!important;overflow:hidden!important;
+    transform:none!important;transition:background-color .12s ease,color .12s ease,box-shadow .12s ease!important;
+    -webkit-tap-highlight-color:transparent!important;touch-action:manipulation!important;
+  }
+  body.daofaMobileMode .mobileBottomNav button:active,
+  body.daofaMobileMode .mobileBottomNav button:focus,
+  body.daofaMobileMode .mobileBottomNav button:focus-visible{
+    transform:none!important;scale:1!important;outline:none!important;
+  }
+  body.daofaMobileMode .mobileBottomNav button.active{
+    background:#f3c46d!important;color:#4a2d12!important;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.32)!important;
+  }
+  body.daofaMobileMode .mobileBottomNav .pkg405NavIcon{
+    display:block!important;width:22px!important;height:22px!important;min-width:22px!important;min-height:22px!important;
+    font-size:19px!important;line-height:22px!important;text-align:center!important;
+    transform:none!important;transition:none!important;flex:0 0 22px!important;
+  }
+  body.daofaMobileMode .mobileBottomNav .pkg405NavLabel{
+    display:block!important;font-size:10.5px!important;line-height:12px!important;height:12px!important;min-height:12px!important;
+    transform:none!important;transition:none!important;
+  }
+  body.daofaMobileMode .voiceQuickBar .pkg405AiSpeechBtn{
+    display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 auto!important;
+    min-height:42px!important;padding:8px 12px!important;
+    background:#fff4df!important;color:#7b3d11!important;border:1px solid #d7b27c!important;font-weight:900!important;
+  }
+  body.daofaMobileMode .speechPanel{
+    left:10px!important;right:10px!important;width:auto!important;
+    bottom:calc(var(--pkg405-nav-h) + env(safe-area-inset-bottom,0px) + 16px)!important;
+    max-height:calc(100dvh - var(--pkg405-nav-h) - env(safe-area-inset-bottom,0px) - 34px)!important;
+    z-index:2147483600!important;
+  }
+  body.daofaMobileMode .app{padding-bottom:calc(var(--pkg405-nav-h) + env(safe-area-inset-bottom,0px) + 18px)!important;}
+  body.daofaMobileMode .main{height:calc(100dvh - var(--pkg405-nav-h) - env(safe-area-inset-bottom,0px) - 26px)!important;}
+  body.daofaMobileMode .content{padding-bottom:calc(var(--pkg405-nav-h) + env(safe-area-inset-bottom,0px) + 24px)!important;}
+}
+@media(max-width:390px){
+  body.daofaMobileMode{--pkg405-nav-h:64px!important;}
+  body.daofaMobileMode .mobileBottomNav{gap:3px!important;padding:5px!important;width:calc(100vw - 10px)!important;}
+  body.daofaMobileMode .mobileBottomNav button{font-size:9.5px!important;border-radius:12px!important;}
+  body.daofaMobileMode .mobileBottomNav .pkg405NavIcon{font-size:18px!important;width:20px!important;height:20px!important;line-height:20px!important;min-width:20px!important;min-height:20px!important;flex-basis:20px!important;}
+  body.daofaMobileMode .mobileBottomNav .pkg405NavLabel{font-size:9.5px!important;line-height:11px!important;height:11px!important;min-height:11px!important;}
+}
+</style>
+<script id="pkg405-mobile-nav-stable-js">
+(function(){
+  const VERSION='405';
+  const navItems=[
+    ['read','📖','閱讀'],['allLibrary','📚','作品'],['filters','🔎','篩選'],['speech','🔊','朗讀'],['learning','📝','學習'],['write','🖌️','書寫']
+  ];
+  let current='read';
+  function isTouchLayout(){const q=new URLSearchParams(location.search);return innerWidth<740||q.get('forceMobile')==='1'||document.body.classList.contains('daofaMobileMode');}
+  function ensureAiButton(){
+    const bar=document.querySelector('.voiceQuickBar'); if(!bar)return;
+    let b=bar.querySelector('.pkg405AiSpeechBtn');
+    if(!b){b=document.createElement('button');b.type='button';b.className='pkg405AiSpeechBtn';b.textContent='AI朗讀';
+      b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();try{toggleSpeechPanel(true);}catch(_){const p=document.getElementById('speechPanel');if(p)p.classList.add('show');}});
+      const status=bar.querySelector('.voiceStatus');bar.insertBefore(b,status||null);
+    }
+  }
+  function setActive(tab){current=tab;document.querySelectorAll('.mobileBottomNav button[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));}
+  function closeDrawers(){document.body.classList.remove('mobileShowFilters','mobileShowLibrary','mobileDialogOpen','mobileNavHidden');}
+  function go(tab){
+    closeDrawers(); setActive(tab);
+    if(tab==='filters'){try{if(typeof setMobileFavMode==='function')setMobileFavMode(false);}catch(_){}document.body.classList.add('mobileShowFilters');return;}
+    if(tab==='allLibrary'){try{if(typeof setMobileFavMode==='function')setMobileFavMode(false);}catch(_){}document.body.classList.add('mobileShowLibrary');return;}
+    if(tab==='speech'){
+      try{toggleSpeechPanel(true);}catch(_){const p=document.getElementById('speechPanel');if(p)p.classList.add('show');}
+      return;
+    }
+    if(tab==='learning'){
+      try{if(typeof showTab==='function')showTab('learning');}catch(_){}
+      const c=document.getElementById('content');if(c)c.scrollTop=0;
+      return;
+    }
+    if(tab==='write'){
+      try{if(typeof openWritingPage==='function'){openWritingPage();return;}}catch(_){}
+      location.href='./writing.html?source=pkg405-mobile-nav&pkg='+VERSION;return;
+    }
+    try{if(typeof showTab==='function')showTab('original');}catch(_){}
+  }
+  function forceStableStyles(nav){
+    if(!nav)return;
+    const imp=(el,k,v)=>{try{el.style.setProperty(k,v,'important');}catch(_){}};
+    imp(nav,'position','fixed');imp(nav,'left','50%');imp(nav,'right','auto');imp(nav,'top','auto');
+    imp(nav,'bottom','calc(8px + env(safe-area-inset-bottom,0px))');imp(nav,'width',innerWidth<=390?'calc(100vw - 10px)':'min(96vw,680px)');
+    imp(nav,'max-width','calc(100vw - 12px)');imp(nav,'height',innerWidth<=390?'64px':'68px');imp(nav,'min-height',innerWidth<=390?'64px':'68px');imp(nav,'max-height',innerWidth<=390?'64px':'68px');
+    imp(nav,'display','grid');imp(nav,'grid-template-columns','repeat(6,minmax(0,1fr))');imp(nav,'grid-template-rows','1fr');
+    imp(nav,'gap',innerWidth<=390?'3px':'5px');imp(nav,'padding',innerWidth<=390?'5px':'6px');imp(nav,'overflow','hidden');
+    imp(nav,'transform','translateX(-50%)');imp(nav,'transition','none');imp(nav,'opacity','1');imp(nav,'visibility','visible');imp(nav,'pointer-events','auto');imp(nav,'z-index','2147483646');
+    nav.querySelectorAll('button[data-tab]').forEach(function(b){
+      imp(b,'width','100%');imp(b,'height','100%');imp(b,'min-width','0');imp(b,'min-height','0');imp(b,'display','flex');imp(b,'flex-direction','column');imp(b,'align-items','center');imp(b,'justify-content','center');imp(b,'gap','3px');imp(b,'padding','4px 1px');imp(b,'margin','0');imp(b,'transform','none');imp(b,'transition','background-color .12s ease,color .12s ease,box-shadow .12s ease');
+      const i=b.querySelector('.pkg405NavIcon'),l=b.querySelector('.pkg405NavLabel');
+      if(i){const px=innerWidth<=390?'18px':'19px', box=innerWidth<=390?'20px':'22px';imp(i,'font-size',px);imp(i,'width',box);imp(i,'height',box);imp(i,'min-width',box);imp(i,'min-height',box);imp(i,'line-height',box);imp(i,'transform','none');imp(i,'transition','none');}
+      if(l){imp(l,'font-size',innerWidth<=390?'9.5px':'10.5px');imp(l,'line-height',innerWidth<=390?'11px':'12px');imp(l,'height',innerWidth<=390?'11px':'12px');imp(l,'min-height',innerWidth<=390?'11px':'12px');imp(l,'transform','none');imp(l,'transition','none');}
+    });
+    const offset=innerWidth<=390?'82px':'86px';
+    ['.sidebar','.library'].forEach(function(sel){const el=document.querySelector(sel);if(el)imp(el,'bottom',`calc(${offset} + env(safe-area-inset-bottom,0px))`);});
+  }
+  function rebuild(){
+    if(!isTouchLayout())return;
+    document.body.classList.add('daofaMobileMode','daofaForceMobile');
+    let nav=document.querySelector('.mobileBottomNav');
+    if(!nav){nav=document.createElement('nav');nav.className='mobileBottomNav';document.body.appendChild(nav);}
+    nav.innerHTML=navItems.map(([tab,icon,label])=>`<button type="button" data-tab="${tab}" aria-label="${label}"><span class="pkg405NavIcon" aria-hidden="true">${icon}</span><span class="pkg405NavLabel">${label}</span></button>`).join('');
+    nav.querySelectorAll('button[data-tab]').forEach(btn=>btn.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();go(btn.dataset.tab);}));
+    setActive(current);forceStableStyles(nav);
+    ensureAiButton();
+  }
+  // 覆寫舊導覽控制器，讓後續舊程式即使呼叫 DaofaMobile.go 也走同一套邏輯。
+  window.DaofaMobile={go:go};
+  function navValid(nav){return !!(nav&&nav.querySelectorAll('button[data-tab]').length===6&&[...nav.querySelectorAll('button[data-tab]')].every(function(b){return !!b.querySelector('.pkg405NavIcon')&&!!b.querySelector('.pkg405NavLabel');}));}
+  function boot(){const nav=document.querySelector('.mobileBottomNav');if(!navValid(nav))rebuild();else{setActive(current);forceStableStyles(nav);ensureAiButton();}}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,0),{once:true});else setTimeout(boot,0);
+  window.addEventListener('load',()=>setTimeout(boot,40),{once:true});
+  window.addEventListener('pageshow',()=>setTimeout(boot,40),{passive:true});
+  let stabiliseCount=0;const stabiliser=setInterval(function(){boot();if(++stabiliseCount>20)clearInterval(stabiliser);},250);
+  // 不再讓舊程式因 active class 或節點重建造成圖示尺寸跳動。
+  const obs=new MutationObserver(function(){
+    const nav=document.querySelector('.mobileBottomNav');
+    if(!nav||!isTouchLayout())return;
+    if(nav.querySelectorAll('button[data-tab]').length!==6||[...nav.querySelectorAll('button[data-tab]')].some(function(b){return !b.querySelector('.pkg405NavIcon')||!b.querySelector('.pkg405NavLabel');})) rebuild();
+    else {setActive(current);forceStableStyles(nav);}
+    ensureAiButton();
+  });
+  try{obs.observe(document.documentElement,{childList:true,subtree:true});}catch(_){}
+  document.documentElement.dataset.pkg405MobileNav='1';
+})();
+</script>
 </body>
 </html>
 
