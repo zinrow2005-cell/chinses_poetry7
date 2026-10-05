@@ -1,0 +1,36 @@
+PKG401 真毛筆筆觸實測報告
+========================
+測試方式：Chromium headless 實際載入 writing.html，派送 PointerEvent 連續筆畫並讀取 Canvas 像素；同時測試全螢幕 fallback 狀態。
+
+新增功能
+- 新增「真毛筆」筆刷，不取代既有柔順毛筆／濃墨筆／乾筆飛白。
+- Apple Pencil / pen：使用 pressure + tilt 參與粗細與鋪毫角度。
+- 手機／iPad 手指：沒有真實 pressure 時，以速度模擬粗細。
+- 起筆縮窄、行筆鋪毫、慢速/轉折蓄墨、收筆短距離收尖。
+- 輕微可重現的筆緣起伏，降低純圓頭電腦線條感。
+
+實測尺寸與結果
+1. 手機 390×844
+   - 真毛筆按鈕：存在
+   - Touch 連續快/慢筆：成功
+   - Canvas 有實際筆跡像素：4474
+   - 全螢幕：成功；Canvas pointer-events=auto；右側設定 display=none
+   - Runtime JS errors：0
+2. iPad 直式 768×1024
+   - Touch + pen 模擬：成功
+   - Canvas 有實際筆跡像素：5655
+   - 全螢幕：成功；真毛筆按鈕存在
+   - Runtime JS errors：0
+3. iPad 橫式 1024×768
+   - Touch + pen 模擬：成功
+   - Canvas 有實際筆跡像素：8093
+   - 全螢幕：成功；右側設定隱藏
+   - Runtime JS errors：0
+4. 桌機 1440×900
+   - Mouse/touch/pen 管線未出現 runtime error
+   - Canvas 有實際筆跡像素：9476
+   - 全螢幕：成功
+   - Runtime JS errors：0
+
+注意
+- 以上為 Chromium 裝置尺寸/PointerEvent 測試，不等同於實體 iPad Safari + Apple Pencil 硬體壓力曲線；程式已保留 pressure / tilt 資料，實機有支援時會直接套用。

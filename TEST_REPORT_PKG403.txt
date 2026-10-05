@@ -1,0 +1,33 @@
+PKG403 書法筆法模式測試報告
+日期：2026-10-05
+
+測試方式：Chromium 實際渲染 + Pointer/Mouse 輸入事件測試（裝置尺寸模擬，不等同實體 iPad Safari 硬體測試）
+
+裝置尺寸：
+1. 手機 390×844
+2. iPad 直式 768×1024
+3. iPad 橫式 1024×768
+4. 桌機 1440×900
+
+結果：
+- 新增「書法筆法」筆刷按鈕，可切換 brushType=calligraphyPro
+- 一般模式四種尺寸皆可產生完整連續筆畫
+- 全螢幕狀態：手機 / iPad 直式 / iPad 橫式皆可持續書寫
+- 橫 / 豎 / 撇 / 捺 / 點 / 鉤六種合成筆畫皆成功渲染
+- Apple Pencil 類型 PointerEvent 可使用 pressure / tilt 資料；無壓力裝置使用速度模擬
+- JavaScript inline scripts：39 段，Node 語法檢查錯誤 0
+- Browser runtime error：0
+
+一般書寫 Canvas 非透明像素（實際事件管線）：
+- 手機：1229
+- iPad 直式：1237
+- iPad 橫式：1212
+- 桌機：1157
+
+全螢幕 Canvas 非透明像素：
+- 手機：721
+- iPad 直式：732
+- iPad 橫式：742
+
+備註：
+本次測試確認瀏覽器事件與畫布渲染正常；實體 Apple Pencil 的握筆角度、Safari 版本與硬體壓力曲線仍建議使用者上機確認手感後再細調。

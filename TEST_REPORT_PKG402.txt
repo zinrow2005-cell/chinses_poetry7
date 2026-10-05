@@ -1,0 +1,27 @@
+PKG402 真毛筆楷書筆觸進階版｜測試報告
+
+測試方式：Chromium 以 writing.html 直接載入，使用 DOM PointerEvent 模擬手指與觸控筆書寫。
+這是瀏覽器/視窗尺寸實測，不等同於實體 iPad Safari 或實體 Apple Pencil 硬體測試。
+
+測試尺寸：
+1. 手機 390 x 844
+2. iPad 直式 768 x 1024
+3. iPad 橫式 1024 x 768
+4. 桌機 1440 x 900
+
+書寫測試：
+- 模擬 pen pointer + pressure + tilt：四種尺寸皆可連續產生筆畫。
+- 模擬 touch pointer（接觸面 58 x 54 px）：四種尺寸皆可連續產生筆畫。
+- 全螢幕相關 class 套用後，writingCanvas：display=block、pointer-events=auto、touch-action=none。
+- JavaScript runtime error：四種尺寸皆為 0。
+
+PKG402 毛筆強化：
+- 藏鋒起筆：由小毫跡逐步鋪開。
+- 提按：速度與 pressure 共同控制粗細。
+- 轉折頓筆：大角度轉向時增加鋪毫與蓄墨。
+- 撇收鋒：快速漸尖並延伸。
+- 捺收鋒：先維持筆腹，再逐步出鋒。
+- 豎畫慢收：保留輕微頓筆。
+- 筆緣使用固定函數輕微起伏，無 random，重畫結果可重現。
+
+視覺檢查：已輸出 iPad 橫式筆觸畫面供人工檢視。

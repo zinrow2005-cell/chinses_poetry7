@@ -107845,6 +107845,195 @@ body.pkg345-writing-fullscreen #pkg376Panel:not(.show):not([data-open="1"]){disp
   document.addEventListener('pointercancel',function(e){if(e.pointerType==='pen')resetPenGate();},{capture:true,passive:true});
 })();
 </script>
+
+
+<!-- PKG403｜書法筆法模式：橫豎撇捺點鉤差異化筆觸 -->
+<style id="pkg403-calligraphy-method-css">
+.pkg403MethodBtn{position:relative!important}
+.pkg403MethodBtn::after{content:"筆法";font-size:9px;line-height:1;padding:2px 4px;border-radius:999px;background:#6f3512;color:#fff;margin-left:4px;vertical-align:top}
+.pkg403MethodBtn.pkg403Active{background:linear-gradient(180deg,#6b3512,#2c1609)!important;color:#fff!important;border-color:#6b3512!important;box-shadow:0 7px 18px rgba(73,37,14,.20)!important}
+</style>
+<script id="pkg403-calligraphy-method-js">
+(function(){
+  'use strict';
+  const VERSION='PKG403-calligraphy-method-v1';
+  const TYPE='calligraphyPro';
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const $=id=>document.getElementById(id);
+  const prevPressureWidth=window.pressureWidth;
+  const prevStrokeTo=window.strokeTo;
+  const prevDrawDot=window.drawDot;
+  function active(){try{return !!(window.writeState&&writeState.tool!=='eraser'&&writeState.brushType===TYPE);}catch(e){return false}}
+  function color(){try{return writeState.inkColor||'#23140b';}catch(e){return '#23140b'}}
+  function pressure(evt){let p=0;try{p=Number(evt&&evt.pressure)||0;}catch(e){} if(p>.02)return clamp(p,.08,1); return evt&&evt.pointerType==='pen'?.67:.61;}
+  function et(evt){const t=Number(evt&&evt.timeStamp);return isFinite(t)&&t>0?t:performance.now()}
+  function ad(a,b){let d=Math.abs(a-b)%(Math.PI*2);return d>Math.PI?Math.PI*2-d:d}
+  function nibAngle(evt,dx,dy){
+    let a=Math.atan2(dy||.01,dx||1)+Math.PI/2;
+    try{if(evt&&evt.pointerType==='pen'&&(Math.abs(evt.tiltX||0)+Math.abs(evt.tiltY||0)>5)){const pa=Math.atan2(Number(evt.tiltY)||.01,Number(evt.tiltX)||1)+Math.PI/2;a=a*.68+pa*.32;}}catch(e){}
+    return a;
+  }
+  function stamp(ctx,x,y,w,a,alpha,stretch,seed){
+    const wave=Math.sin((x*.041+y*.057+(seed||0))*1.29);
+    const rx=Math.max(.52,w*(.50+wave*.014));
+    const ry=Math.max(.46,w*(.255*(stretch||1)-wave*.009));
+    ctx.save();ctx.globalCompositeOperation='source-over';ctx.fillStyle=color();ctx.globalAlpha=clamp(alpha,.02,1);
+    ctx.translate(x,y);ctx.rotate(a);ctx.beginPath();ctx.ellipse(0,0,rx,ry,0,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=clamp(alpha*.042,.01,.048);ctx.beginPath();ctx.ellipse(wave*.22,0,rx*1.065,ry*1.07,0,0,Math.PI*2);ctx.fill();ctx.restore();
+  }
+  function st(){
+    if(!window.writeState)return {};
+    if(!writeState.pkg403)writeState.pkg403={points:0,start:null,last:null,lastAngle:null,prevAngle:null,lastDir:{x:1,y:0},path:0,lastVel:0,lastAt:0,lastWidth:8,maxTurn:0,endTurn:0};
+    return writeState.pkg403;
+  }
+  function classify(S,end){
+    if(!S.start||!end)return 'unknown';
+    const dx=end.x-S.start.x,dy=end.y-S.start.y,L=Math.hypot(dx,dy),ax=Math.abs(dx),ay=Math.abs(dy);
+    if(L<Math.max(16,(S.lastWidth||8)*2.0))return 'dot';
+    if(ax>ay*1.8)return 'horizontal';
+    if(ay>ax*1.85)return 'vertical';
+    if(dx<0&&dy>0)return 'leftfall';
+    if(dx>0&&dy>0)return 'rightfall';
+    return 'slant';
+  }
+  function widthFactor(kind,r,vel,turn){
+    if(kind==='horizontal'){
+      // 橫：起筆略重、行筆穩、末段再按。
+      if(r<.12)return .84+r*1.55;
+      if(r>.83)return 1.00+(r-.83)*.72;
+      return .98;
+    }
+    if(kind==='vertical'){
+      // 豎：起筆頓，行筆穩，末段依速度準備垂露/懸針。
+      if(r<.13)return .88+r*1.25;
+      if(r>.80&&vel>.42)return 1.02-(r-.80)*1.55;
+      if(r>.84)return 1.00+(r-.84)*.46;
+      return .98;
+    }
+    if(kind==='leftfall')return clamp(1.08-r*.58,.46,1.08); // 撇：由重至輕
+    if(kind==='rightfall'){
+      if(r<.45)return .86+r*.48; // 捺：先漸按
+      return clamp(1.08-(r-.45)*.72,.55,1.08); // 再提鋒
+    }
+    if(kind==='dot')return .95;
+    return 1;
+  }
+  window.setPkg403CalligraphyMethod=function(){
+    try{if(typeof window.setWritingTool==='function')window.setWritingTool('brush',false);}catch(e){}
+    try{writeState.tool='brush';writeState.brushType=TYPE;writeState.brushOpacity=.97;window.writeState=writeState;}catch(e){}
+    try{
+      const a=$('toolbarBrushSize'),b=$('brushSize');
+      const cur=Number((a&&a.value)||(b&&b.value)||8);
+      if(cur<11){if(a){a.value='13';a.dispatchEvent(new Event('change',{bubbles:true}));}if(b){b.value='13';b.dispatchEvent(new Event('change',{bubbles:true}));}}
+    }catch(e){}
+    try{localStorage.setItem('daofaWritingBrushType',TYPE);localStorage.setItem('daofaWritingPreset','calligraphyPro');}catch(e){}
+    try{if(typeof window.setWriteStatus==='function')setWriteStatus('書法筆法｜橫豎撇捺點鉤差異化');}catch(e){}
+    sync();
+  };
+  window.pressureWidth=function(base,evt,dist,dt){
+    if(!active()){try{return typeof prevPressureWidth==='function'?prevPressureWidth(base,evt,dist,dt):base;}catch(e){return base}}
+    base=Math.max(1,Number(base)||8);dist=Math.max(0,Number(dist)||0);dt=Math.max(1,Number(dt)||16);
+    const S=st(),p=pressure(evt),v=dist/dt;
+    const speed=clamp(1.29-v*.35,.47,1.30);
+    let target=base*(.34+p*1.18)*speed;
+    try{if(evt&&evt.pointerType==='pen'){const tilt=Math.min(1,(Math.abs(evt.tiltX||0)+Math.abs(evt.tiltY||0))/110);target*=1+tilt*.09;}}catch(e){}
+    const prev=Number(S.lastWidth)||target,mix=v>.8?.55:.40,out=prev*(1-mix)+target*mix;
+    S.lastWidth=out;S.lastVel=v;try{writeState.lastWidth=out;}catch(e){}
+    return clamp(out,Math.max(.72,base*.21),base*2.30);
+  };
+  try{pressureWidth=window.pressureWidth;}catch(e){}
+
+  window.drawDot=function(ctx,p,w,evt){
+    if(!active()){try{return typeof prevDrawDot==='function'?prevDrawDot(ctx,p,w,evt):undefined;}catch(e){return}}
+    const S=st();Object.assign(S,{points:0,start:{x:p.x,y:p.y},last:{x:p.x,y:p.y},lastAngle:null,prevAngle:null,lastDir:{x:1,y:.03},path:0,lastVel:0,lastAt:et(evt),lastWidth:Math.max(1,w*.68),maxTurn:0,endTurn:0});
+    const a=nibAngle(evt,1,.03);
+    // 藏鋒：微逆入，再鋪毫。
+    stamp(ctx,p.x-.72,p.y-.10,Math.max(.62,w*.20),a,.60,.76,1);
+    stamp(ctx,p.x-.34,p.y-.05,Math.max(.72,w*.34),a,.75,.86,2);
+    stamp(ctx,p.x,p.y,Math.max(.85,w*.50),a,.89,.96,3);
+    return p;
+  };
+  try{drawDot=window.drawDot;}catch(e){}
+
+  window.strokeTo=function(ctx,from,to,width,evt){
+    if(!active()){try{return typeof prevStrokeTo==='function'?prevStrokeTo(ctx,from,to,width,evt):to;}catch(e){return to}}
+    const dx=to.x-from.x,dy=to.y-from.y,dist=Math.hypot(dx,dy);if(dist<.025)return to;
+    const S=st(),now=et(evt),dt=Math.max(1,now-(S.lastAt||now-16)),v=dist/dt,ang=Math.atan2(dy,dx),turn=S.lastAngle==null?0:ad(ang,S.lastAngle);
+    S.prevAngle=S.lastAngle;S.lastAngle=ang;S.endTurn=turn;S.maxTurn=Math.max(S.maxTurn||0,turn);S.path+=dist;S.lastVel=v;S.lastAt=now;S.lastDir={x:dx,y:dy};S.last=to;
+    const kind=classify(S,to);
+    const total=Math.max(1,Math.hypot(to.x-S.start.x,to.y-S.start.y));
+    const r=clamp(total/Math.max(total+28,1),.03,.97); // 線上估算，避免初段過度分類
+    let baseW=Math.max(.68,width*widthFactor(kind,r,v,turn));
+    if(turn>.58)baseW*=1+clamp((turn-.58)*.20,.04,.22); // 折處頓筆
+    const a=nibAngle(evt,dx,dy),gap=clamp(baseW*.13,.70,2.35),n=Math.max(1,Math.min(96,Math.ceil(dist/gap)));
+    for(let i=1;i<=n;i++){
+      const q=i/n,x=from.x+dx*q,y=from.y+dy*q;
+      const fiber=1+Math.sin((S.points+i)*1.61+x*.013+y*.018)*.017;
+      const alpha=clamp(.92-v*.052,.73,.95);
+      stamp(ctx,x,y,baseW*fiber,a,alpha,1,S.points+i);
+    }
+    if(turn>.58){
+      const pool=clamp(.10+(turn-.58)*.15,.10,.27);
+      stamp(ctx,from.x,from.y,baseW*(1+pool),nibAngle(evt,Math.cos(S.prevAngle||ang),Math.sin(S.prevAngle||ang)),.25+pool,.94,300+S.points);
+    }
+    S.points+=n;S.lastWidth=baseW;
+    const mid={x:(from.x+to.x)/2,y:(from.y+to.y)/2};
+    try{writeState.pkg343PrevMid=mid;writeState.pkg369PrevMid=mid;}catch(e){}
+    return mid;
+  };
+  try{strokeTo=window.strokeTo;}catch(e){}
+
+  function finish(evt){
+    if(!active()||!window.writeState||!writeState.drawing)return;
+    const c=$('writingCanvas'),S=st(),p=writeState.lastPoint;if(!c||!p||!S.start||!S.lastDir)return;
+    const ctx=c.getContext('2d'),kind=classify(S,p),L=Math.hypot(S.lastDir.x,S.lastDir.y)||1,ux=S.lastDir.x/L,uy=S.lastDir.y/L;
+    const base=Math.max(.75,Number(S.lastWidth||writeState.lastWidth)||6),a=nibAngle(evt,ux,uy),fast=(S.lastVel||0)>.42;
+    const hook=(S.endTurn||0)>.72 && S.path>base*2.8;
+    if(kind==='dot'){
+      // 點：短促蓄墨，尾部微收。
+      stamp(ctx,p.x,p.y,base*1.03,a,.46,.92,700);
+      stamp(ctx,p.x+ux*1.2,p.y+uy*1.2,base*.62,a,.62,.82,701);
+    }else if(hook){
+      // 鉤：轉折蓄墨後沿末方向快速提鋒。
+      stamp(ctx,p.x-ux*.7,p.y-uy*.7,base*1.08,a,.35,.94,710);
+      for(let i=1;i<=7;i++){const q=i/7;stamp(ctx,p.x+ux*i*1.45,p.y+uy*i*1.45,Math.max(.42,base*(1-q)*.82),a,.78-q*.24,.78,711+i);}
+    }else if(kind==='leftfall'){
+      for(let i=1;i<=10;i++){const q=i/10;stamp(ctx,p.x+ux*i*1.95,p.y+uy*i*1.95,Math.max(.42,base*(1-q)*.90),a,.80-q*.24,.80,730+i);}
+    }else if(kind==='rightfall'){
+      for(let i=1;i<=9;i++){const q=i/9;const keep=q<.32?.94:Math.pow(1-(q-.32)/.68,1.18)*.96+.03;stamp(ctx,p.x+ux*i*1.55,p.y+uy*i*1.55,Math.max(.44,base*keep),a,.81-q*.20,.82,750+i);}
+    }else if(kind==='vertical'&&fast){
+      // 懸針：快速豎畫收成尖鋒。
+      for(let i=1;i<=9;i++){const q=i/9;stamp(ctx,p.x+ux*i*1.35,p.y+uy*i*1.35,Math.max(.42,base*(1-q)*.86),a,.78-q*.22,.82,770+i);}
+    }else if(kind==='vertical'){
+      // 垂露：末端略頓成圓潤收尾。
+      stamp(ctx,p.x,p.y,base*.82,a,.28,.92,790);
+      stamp(ctx,p.x+ux*.5,p.y+uy*.5,base*.68,a,.30,.88,791);
+    }else if(kind==='horizontal'){
+      // 橫畫末端回鋒：末段略按，向內極短回收。
+      stamp(ctx,p.x,p.y,base*1.04,a,.30,.94,800);
+      stamp(ctx,p.x-ux*.75,p.y-uy*.75,base*.82,a,.28,.88,801);
+    }else{
+      for(let i=1;i<=6;i++){const q=i/6;stamp(ctx,p.x+ux*i*1.25,p.y+uy*i*1.25,Math.max(.44,base*(1-q)*.86),a,.76-q*.20,.82,820+i);}
+    }
+    S.lastAt=0;
+  }
+  function bind(){const c=$('writingCanvas');if(!c||c.dataset.pkg403Method==='1')return;c.dataset.pkg403Method='1';c.addEventListener('pointerup',finish,{capture:true,passive:true});c.addEventListener('pointercancel',finish,{capture:true,passive:true});}
+  function mk(){const b=document.createElement('button');b.type='button';b.className='pkg343PenBtn pkg403MethodBtn';b.dataset.pkg403Method='1';b.innerHTML='<span class="pkg343PenNib calligraphy" style="--pen-color:#23140b"></span><span>書法筆法</span>';b.title='書法筆法｜橫豎撇捺點鉤差異化';b.addEventListener('click',window.setPkg403CalligraphyMethod);return b;}
+  function inject(){
+    document.querySelectorAll('.pkg343PenShelf').forEach(s=>{if(!s.querySelector('[data-pkg403-method]'))s.insertBefore(mk(),s.firstChild);});
+    const row=document.querySelector('#pkg384BrushPanel .pkg384PanelRow');if(row&&!row.querySelector('[data-pkg403-method]')){const b=mk();b.textContent='書法筆法';row.insertBefore(b,row.firstChild);}
+    bind();sync();
+  }
+  function sync(){const on=active();document.querySelectorAll('[data-pkg403-method]').forEach(b=>b.classList.toggle('pkg403Active',on));}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(inject,260),{once:true});else setTimeout(inject,260);
+  window.addEventListener('load',()=>{setTimeout(inject,650);setTimeout(inject,2100);},{once:true});
+  document.addEventListener('fullscreenchange',()=>setTimeout(inject,100));
+  window.addEventListener('orientationchange',()=>setTimeout(inject,240),{passive:true});
+  setInterval(inject,1500);
+  document.documentElement.dataset.pkg403Brush=VERSION;
+})();
+</script>
+
 </body>
 </html>
 
@@ -108401,5 +108590,469 @@ body.pkg345-writing-fullscreen #pkg376Panel:not(.show):not([data-open="1"]){disp
   else window.addEventListener('load',boot,{once:true});
   window.addEventListener('pageshow',()=>setTimeout(installTouchFallback,120),{passive:true});
   window.addEventListener('orientationchange',()=>setTimeout(installTouchFallback,260),{passive:true});
+})();
+</script>
+
+<!-- PKG400｜全螢幕狀態提前鎖定：避免 iPad / 手機原右側設定欄露出 -->
+<style id="pkg400-fullscreen-hard-state-css">
+html.pkg400-fs-active,
+html.pkg400-fs-active body{overflow:hidden!important;overscroll-behavior:none!important;}
+body.pkg400-fs-active .side,
+body.pkg400-fs-active .topbar,
+body.pkg400-fs-active .boardHead,
+body.pkg400-fs-active .writeToolbar,
+body.pkg400-fs-active #pkg374PracticeRail,
+body.pkg400-fs-active .pkg343Dock,
+body.pkg400-fs-active #pkg343FloatingMini,
+body.pkg400-fs-active .pkg343FloatingMini,
+body.pkg400-fs-active .pkg330FloatingExit{
+  display:none!important;visibility:hidden!important;pointer-events:none!important;
+}
+body.pkg400-fs-active .studio{
+  display:block!important;position:fixed!important;inset:0!important;z-index:2147482450!important;
+  width:100vw!important;height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important;
+  margin:0!important;padding:0!important;overflow:hidden!important;background:#fffaf2!important;
+}
+body.pkg400-fs-active .boardCard.pkg333FullscreenHost{
+  display:block!important;position:fixed!important;inset:0!important;z-index:2147482460!important;
+  width:100vw!important;height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important;
+  margin:0!important;padding:0!important;border:0!important;border-radius:0!important;overflow:hidden!important;background:#fffaf2!important;
+}
+/* 即使瀏覽器沒有及時補上 fullscreenWriting，畫布區仍固定填滿全螢幕 */
+body.pkg400-fs-active .boardCard.pkg333FullscreenHost #writeBoard{
+  display:block!important;visibility:visible!important;pointer-events:auto!important;position:fixed!important;
+  left:0!important;right:0!important;bottom:0!important;z-index:2147482500!important;background:#fffaf2!important;opacity:1!important;
+  top:calc(110px + env(safe-area-inset-top))!important;
+  width:100vw!important;height:calc(100dvh - 110px - env(safe-area-inset-top))!important;
+  min-height:calc(100dvh - 110px - env(safe-area-inset-top))!important;
+  margin:0!important;border:0!important;border-radius:0!important;overflow:hidden!important;
+}
+body.pkg400-fs-active #writingCanvas{display:block!important;visibility:visible!important;pointer-events:auto!important;touch-action:none!important;}
+body.pkg400-fs-active .writeGuide{pointer-events:none!important;}
+body.pkg400-fs-active .pkg384FsMini{display:block!important;visibility:visible!important;pointer-events:auto!important;z-index:2147483640!important;}
+body.pkg400-fs-active #pkg376Summary{display:flex!important;visibility:visible!important;pointer-events:auto!important;z-index:2147483600!important;}
+body.pkg400-fs-active #pkg376Panel:not(.show):not([data-open="1"]){display:none!important;}
+/* 原設定欄是 studio 的兄弟內容時，也絕不允許浮到全螢幕層 */
+html.pkg400-fs-active .side{display:none!important;visibility:hidden!important;pointer-events:none!important;opacity:0!important;z-index:-1!important;}
+.boardCard.pkg333FullscreenHost:fullscreen,
+.boardCard.pkg333FullscreenHost:-webkit-full-screen{background:#fffaf2!important;overflow:hidden!important;}
+.boardCard.pkg333FullscreenHost:fullscreen::backdrop{background:#fffaf2!important;}
+@media(max-width:700px){
+  body.pkg400-fs-active .boardCard.pkg333FullscreenHost #writeBoard{
+    top:calc(98px + env(safe-area-inset-top))!important;
+    height:calc(100dvh - 98px - env(safe-area-inset-top))!important;
+    min-height:calc(100dvh - 98px - env(safe-area-inset-top))!important;
+  }
+}
+</style>
+<script id="pkg400-fullscreen-hard-state-js">
+(function(){
+  const $=id=>document.getElementById(id);
+  function activate(){
+    const board=$('writeBoard'); if(!board) return;
+    const host=board.closest('.boardCard')||board;
+    document.documentElement.classList.add('pkg400-fs-active');
+    document.body.classList.add('pkg400-fs-active','pkg345-writing-fullscreen');
+    board.classList.add('fullscreenWriting');
+    host.classList.add('pkg333FullscreenHost');
+    const side=document.querySelector('.side'); if(side) side.setAttribute('aria-hidden','true');
+    try{board.style.setProperty('pointer-events','auto','important');$('writingCanvas')?.style.setProperty('pointer-events','auto','important');}catch(e){}
+    setTimeout(()=>{try{resizeWritingCanvas(true);renderWritingGuide();}catch(e){}},70);
+  }
+  function deactivate(){
+    document.documentElement.classList.remove('pkg400-fs-active');
+    document.body.classList.remove('pkg400-fs-active');
+    const side=document.querySelector('.side'); if(side) side.removeAttribute('aria-hidden');
+  }
+  function wrap(){
+    if(window.__pkg400FsWrapped) return; window.__pkg400FsWrapped=true;
+    const oldEnter=window.enterWritingFullscreen;
+    const oldExit=window.exitWritingFullscreen;
+    if(typeof oldEnter==='function'){
+      window.enterWritingFullscreen=function(){
+        activate();
+        let r;
+        try{r=oldEnter.apply(this,arguments);}catch(e){console.error(e);}
+        setTimeout(activate,40); setTimeout(activate,180);
+        return r;
+      };
+    }
+    if(typeof oldExit==='function'){
+      window.exitWritingFullscreen=function(){
+        let r;
+        try{r=oldExit.apply(this,arguments);}catch(e){console.error(e);}
+        setTimeout(()=>{
+          const board=$('writeBoard');
+          if(!document.fullscreenElement && !board?.classList.contains('fullscreenWriting')) deactivate();
+        },120);
+        return r;
+      };
+    }
+  }
+  function sync(){
+    const board=$('writeBoard');
+    const active=!!document.fullscreenElement || !!board?.classList.contains('fullscreenWriting') || document.body.classList.contains('pkg345-writing-fullscreen');
+    if(active) activate(); else deactivate();
+  }
+  document.addEventListener('fullscreenchange',()=>setTimeout(sync,0));
+  document.addEventListener('webkitfullscreenchange',()=>setTimeout(sync,0));
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>{wrap();sync();},{once:true}); else {wrap();sync();}
+  setTimeout(wrap,500);
+})();
+</script>
+
+<!-- PKG401｜真毛筆筆觸：速度/壓力/轉折墨色/起收鋒 -->
+<style id="pkg401-real-brush-css">
+.pkg401SumiBtn{position:relative!important}
+.pkg401SumiBtn::after{content:"新";font-size:9px;line-height:1;padding:2px 4px;border-radius:999px;background:#8d460f;color:#fff;margin-left:4px;vertical-align:top}
+.pkg401SumiBtn.pkg401Active{background:linear-gradient(180deg,#5c2e0f,#2d1708)!important;color:#fff!important;border-color:#5c2e0f!important;box-shadow:0 7px 18px rgba(80,42,15,.18)!important}
+.pkg401BrushHint{font-size:11px;color:#8a6847;font-weight:800;padding:0 5px;white-space:nowrap}
+</style>
+<script id="pkg401-real-brush-js">
+(function(){
+  const VERSION='PKG401-real-sumi-brush';
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const oldPressureWidth=window.pressureWidth;
+  const oldStrokeTo=window.strokeTo;
+  const oldDrawDot=window.drawDot;
+  const $=id=>document.getElementById(id);
+  function isSumi(){try{return !!(window.writeState&&writeState.tool!=='eraser'&&writeState.brushType==='sumi');}catch(e){return false}}
+  function ink(){try{return (writeState&&writeState.inkColor)||'#23140b';}catch(e){return '#23140b'}}
+  function pressure(evt){
+    let p=0;
+    try{p=Number(evt&&evt.pressure)||0;}catch(e){}
+    if(p>.01)return clamp(p,.10,1);
+    // 手指沒有真實壓力時，保持中等壓力，粗細改由速度主導。
+    return (evt&&evt.pointerType)==='pen'?.72:.62;
+  }
+  function nibAngle(evt,dx,dy){
+    let angle=Math.atan2(dy||0.01,dx||1)+Math.PI/2;
+    try{
+      if(evt&&evt.pointerType==='pen'&&(Math.abs(evt.tiltX||0)+Math.abs(evt.tiltY||0)>4)){
+        const penAngle=Math.atan2(Number(evt.tiltY)||0.01,Number(evt.tiltX)||1)+Math.PI/2;
+        angle=angle*.58+penAngle*.42;
+      }
+    }catch(e){}
+    return angle;
+  }
+  function sumiStamp(ctx,x,y,width,angle,alpha,seed){
+    const wobble=Math.sin((x*0.071+y*0.053+(seed||0))*1.17);
+    const rx=Math.max(.7,width*(.49+wobble*.018));
+    const ry=Math.max(.55,width*(.30-wobble*.012));
+    ctx.save();
+    ctx.globalCompositeOperation='source-over';
+    ctx.fillStyle=ink();
+    ctx.globalAlpha=clamp(alpha,.05,1);
+    ctx.translate(x,y);ctx.rotate(angle);
+    ctx.beginPath();ctx.ellipse(0,0,rx,ry,0,0,Math.PI*2);ctx.fill();
+    // 很輕的外緣滲墨，不使用隨機值，避免畫面閃爍或同筆重畫結果不同。
+    ctx.globalAlpha=clamp(alpha*.065,.018,.07);
+    ctx.beginPath();ctx.ellipse(wobble*.32,0,rx*1.08,ry*1.08,0,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  }
+  window.setPkg401SumiBrush=function(){
+    try{if(typeof window.setWritingTool==='function')window.setWritingTool('brush',false);}catch(e){}
+    try{writeState.tool='brush';writeState.brushType='sumi';writeState.brushOpacity=.96;window.writeState=writeState;}catch(e){}
+    try{
+      const size=$('toolbarBrushSize')||$('brushSize');
+      if(size && Number(size.value)<10){size.value='14';size.dispatchEvent(new Event('input',{bubbles:true}));}
+    }catch(e){}
+    try{localStorage.setItem('daofaWritingBrushType','sumi');localStorage.setItem('daofaWritingPreset','sumi');}catch(e){}
+    try{if(typeof window.setWriteStatus==='function')setWriteStatus('真毛筆｜速度、壓力與起收鋒模擬');}catch(e){}
+    syncButtons();
+  };
+  window.pressureWidth=function(base,evt,dist,dt){
+    if(!isSumi()){
+      try{return typeof oldPressureWidth==='function'?oldPressureWidth(base,evt,dist,dt):base;}catch(e){return base;}
+    }
+    base=Math.max(1,Number(base)||8);
+    const p=pressure(evt);
+    const velocity=(dt>0&&isFinite(dt))?(Number(dist)||0)/dt:0;
+    // 慢寫自然下沉、快寫變細；Pencil 再疊加真實壓力。
+    const speed=clamp(1.28-velocity*.31,.48,1.30);
+    let target=base*(.42+p*1.18)*speed;
+    // 觸控筆傾斜時略增加鋪毫面積。
+    try{if(evt&&evt.pointerType==='pen'){const tilt=Math.min(1,(Math.abs(evt.tiltX||0)+Math.abs(evt.tiltY||0))/110);target*=1+tilt*.12;}}catch(e){}
+    let prev=target;
+    try{prev=Number(writeState.pkg401LastWidth||writeState.lastWidth)||target;}catch(e){}
+    const smooth=prev*.60+target*.40;
+    try{writeState.pkg401LastWidth=smooth;writeState.lastWidth=smooth;writeState.lastPressure=(Number(writeState.lastPressure)||p)*.64+p*.36;}catch(e){}
+    return clamp(smooth,Math.max(.8,base*.28),base*2.15);
+  };
+  try{pressureWidth=window.pressureWidth;}catch(e){}
+
+  window.drawDot=function(ctx,p,w,evt){
+    if(!isSumi()){
+      try{return typeof oldDrawDot==='function'?oldDrawDot(ctx,p,w,evt):undefined;}catch(e){return;}
+    }
+    try{writeState.pkg401StrokePoints=0;writeState.pkg401LastDir={x:1,y:.15};writeState.pkg401LastWidth=Math.max(1,w*.68);}catch(e){}
+    const a=nibAngle(evt,1,.15);
+    // 起筆稍收，模擬筆鋒落紙後逐步鋪開。
+    sumiStamp(ctx,p.x,p.y,Math.max(1,w*.62),a,.86,0);
+    sumiStamp(ctx,p.x+.25,p.y+.18,Math.max(1,w*.42),a,.72,2);
+    return p;
+  };
+  try{drawDot=window.drawDot;}catch(e){}
+
+  window.strokeTo=function(ctx,from,to,width,evt){
+    if(!isSumi()){
+      try{return typeof oldStrokeTo==='function'?oldStrokeTo(ctx,from,to,width,evt):to;}catch(e){return to;}
+    }
+    const dx=to.x-from.x,dy=to.y-from.y,dist=Math.hypot(dx,dy);
+    if(dist<.03)return to;
+    let points=0;try{points=Number(writeState.pkg401StrokePoints)||0;}catch(e){}
+    const startScale=clamp(.48+points*.12,.48,1);
+    const actualW=Math.max(.8,width*startScale);
+    const angle=nibAngle(evt,dx,dy);
+    const t=Number(evt&&evt.timeStamp)||performance.now();
+    let dt=16;try{dt=Math.max(1,t-(Number(writeState.lastTime)||t-16));}catch(e){}
+    const velocity=dist/dt;
+    const slowInk=clamp(1.02-velocity*.18,.72,1);
+    // 用連續橢圓毫跡取代單純圓頭線，轉折與橫豎筆會有方向感。
+    const gap=clamp(actualW*.16,1.1,3.2);
+    const n=Math.max(1,Math.min(64,Math.ceil(dist/gap)));
+    for(let i=1;i<=n;i++){
+      const r=i/n;
+      const x=from.x+dx*r,y=from.y+dy*r;
+      // 細微、可重現的邊緣起伏，避免規則電腦線條。
+      const edge=1+Math.sin((points+i)*1.93+x*.017+y*.013)*.025;
+      sumiStamp(ctx,x,y,actualW*edge,angle,.88*slowInk,points+i);
+    }
+    // 慢速或轉折處略蓄墨，形成毛筆停頓感。
+    try{
+      const lastDir=writeState.pkg401LastDir||{x:dx,y:dy};
+      const la=Math.atan2(lastDir.y,lastDir.x),ca=Math.atan2(dy,dx);
+      let turn=Math.abs(ca-la);if(turn>Math.PI)turn=Math.PI*2-turn;
+      if(velocity<.28||turn>.48){
+        const pool=clamp((.28-velocity)*1.3 + turn*.16,.04,.24);
+        sumiStamp(ctx,to.x,to.y,actualW*(1+pool*.35),angle,.18+pool*.42,77+points);
+      }
+      writeState.pkg401LastDir={x:dx,y:dy};writeState.pkg401StrokePoints=points+n;
+    }catch(e){}
+    const mid={x:(from.x+to.x)/2,y:(from.y+to.y)/2};
+    try{writeState.pkg343PrevMid=mid;writeState.pkg369PrevMid=mid;}catch(e){}
+    return mid;
+  };
+  try{strokeTo=window.strokeTo;}catch(e){}
+
+  function drawTaper(evt){
+    if(!isSumi()||!window.writeState||!writeState.drawing)return;
+    const canvas=$('writingCanvas');if(!canvas)return;
+    let p=writeState.lastPoint,dir=writeState.pkg401LastDir;if(!p||!dir)return;
+    const len=Math.hypot(dir.x,dir.y)||1,ux=dir.x/len,uy=dir.y/len;
+    const ctx=canvas.getContext('2d');
+    const w=Math.max(1,Number(writeState.pkg401LastWidth||writeState.lastWidth)||6);
+    const angle=nibAngle(evt,ux,uy);
+    // 收筆往行筆方向延伸極短距離並逐步收尖。
+    for(let i=1;i<=5;i++){
+      const r=i/5,tw=w*(1-r*.88);
+      sumiStamp(ctx,p.x+ux*(i*1.3),p.y+uy*(i*1.3),Math.max(.65,tw),angle,.74*(1-r*.38),120+i);
+    }
+  }
+  function bindTaper(){
+    const c=$('writingCanvas');if(!c||c.dataset.pkg401Taper==='1')return;
+    c.dataset.pkg401Taper='1';
+    c.addEventListener('pointerup',drawTaper,{capture:true,passive:true});
+    c.addEventListener('pointercancel',drawTaper,{capture:true,passive:true});
+  }
+  function makeBtn(){
+    const b=document.createElement('button');b.type='button';b.className='pkg343PenBtn pkg401SumiBtn';b.dataset.pkg401Sumi='1';
+    b.innerHTML='<span class="pkg343PenNib calligraphy" style="--pen-color:#23140b"></span><span>真毛筆</span>';
+    b.addEventListener('click',window.setPkg401SumiBrush);return b;
+  }
+  function injectUI(){
+    document.querySelectorAll('.pkg343PenShelf').forEach(s=>{if(!s.querySelector('[data-pkg401-sumi]'))s.insertBefore(makeBtn(),s.firstChild);});
+    const row=document.querySelector('#pkg384BrushPanel .pkg384PanelRow');
+    if(row&&!row.querySelector('[data-pkg401-sumi]')){const b=makeBtn();b.textContent='真毛筆';row.insertBefore(b,row.firstChild);}
+    bindTaper();syncButtons();
+  }
+  function syncButtons(){const on=isSumi();document.querySelectorAll('[data-pkg401-sumi]').forEach(b=>b.classList.toggle('pkg401Active',on));}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(injectUI,180),{once:true});else setTimeout(injectUI,180);
+  window.addEventListener('load',()=>{setTimeout(injectUI,500);setTimeout(injectUI,1900);},{once:true});
+  document.addEventListener('fullscreenchange',()=>setTimeout(injectUI,80));
+  window.addEventListener('orientationchange',()=>setTimeout(injectUI,220),{passive:true});
+  setInterval(()=>{injectUI();syncButtons();},1200);
+  document.documentElement.dataset.pkg401Brush=VERSION;
+})();
+</script>
+
+<!-- PKG402｜真毛筆進階：楷書提按 / 藏鋒 / 頓筆 / 撇捺尖鋒 -->
+<style id="pkg402-calligraphy-brush-css">
+[data-pkg401-sumi] .pkg402Tag{font-size:9px;opacity:.82;margin-left:4px}
+.pkg402BrushBadge{font-size:10px;font-weight:900;color:#70401f;background:#f6eadb;border:1px solid #dfc7a7;border-radius:999px;padding:2px 7px;margin-left:4px;white-space:nowrap}
+</style>
+<script id="pkg402-calligraphy-brush-js">
+(function(){
+  'use strict';
+  const VERSION='PKG402-calligraphy-sumi-v2';
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  const $=id=>document.getElementById(id);
+  const prevPressureWidth=window.pressureWidth;
+  const prevStrokeTo=window.strokeTo;
+  const prevDrawDot=window.drawDot;
+  function isSumi(){try{return !!(window.writeState&&writeState.tool!=='eraser'&&writeState.brushType==='sumi');}catch(e){return false}}
+  function color(){try{return writeState.inkColor||'#23140b';}catch(e){return '#23140b'}}
+  function pval(evt){
+    let p=0;try{p=Number(evt&&evt.pressure)||0;}catch(e){}
+    if(p>.02)return clamp(p,.08,1);
+    return evt&&evt.pointerType==='pen'?.66:.60;
+  }
+  function evtTime(evt){const t=Number(evt&&evt.timeStamp);return isFinite(t)&&t>0?t:performance.now()}
+  function angleDiff(a,b){let d=Math.abs(a-b)%(Math.PI*2);return d>Math.PI?Math.PI*2-d:d}
+  function penAngle(evt,dx,dy){
+    let a=Math.atan2(dy||.01,dx||1)+Math.PI/2;
+    try{
+      if(evt&&evt.pointerType==='pen'&&(Math.abs(evt.tiltX||0)+Math.abs(evt.tiltY||0)>5)){
+        const pa=Math.atan2(Number(evt.tiltY)||.01,Number(evt.tiltX)||1)+Math.PI/2;
+        a=a*.66+pa*.34;
+      }
+    }catch(e){}
+    return a;
+  }
+  function stamp(ctx,x,y,w,a,alpha,stretch,seed){
+    const wave=Math.sin((x*.047+y*.061+(seed||0))*1.31);
+    const rx=Math.max(.55,w*(.50+wave*.016));
+    const ry=Math.max(.48,w*(.27*(stretch||1)-wave*.010));
+    ctx.save();ctx.globalCompositeOperation='source-over';ctx.fillStyle=color();ctx.globalAlpha=clamp(alpha,.025,1);
+    ctx.translate(x,y);ctx.rotate(a);ctx.beginPath();ctx.ellipse(0,0,rx,ry,0,0,Math.PI*2);ctx.fill();
+    // 宣紙輕滲邊：固定函數，不使用 random，保持復原重畫一致。
+    ctx.globalAlpha=clamp(alpha*.045,.012,.05);ctx.beginPath();ctx.ellipse(wave*.25,0,rx*1.07,ry*1.075,0,0,Math.PI*2);ctx.fill();ctx.restore();
+  }
+  function state(){
+    if(!window.writeState)return {};
+    if(!writeState.pkg402)writeState.pkg402={points:0,lastAngle:null,lastVel:0,lastMoveAt:0,startAt:0,lastWidth:8,lastDir:{x:1,y:0},turnEnergy:0};
+    return writeState.pkg402;
+  }
+  window.pressureWidth=function(base,evt,dist,dt){
+    if(!isSumi()){
+      try{return typeof prevPressureWidth==='function'?prevPressureWidth(base,evt,dist,dt):base;}catch(e){return base}
+    }
+    base=Math.max(1,Number(base)||8);dt=Math.max(1,Number(dt)||16);dist=Math.max(0,Number(dist)||0);
+    const st=state(),p=pval(evt),vel=dist/dt;
+    // 提按：慢行略按、快行略提；Pencil 真實壓力優先。
+    const speedLift=clamp(1.30-vel*.38,.45,1.32);
+    const pausePress=vel<.10?1.12:(vel<.22?1.055:1);
+    let target=base*(.34+p*1.20)*speedLift*pausePress;
+    try{if(evt&&evt.pointerType==='pen'){const tilt=Math.min(1,(Math.abs(evt.tiltX||0)+Math.abs(evt.tiltY||0))/110);target*=1+tilt*.10;}}catch(e){}
+    const prev=Number(st.lastWidth)||Number(writeState.pkg401LastWidth)||target;
+    // 快速提筆時追得快、一般行筆較柔順。
+    const mix=vel>.85?.56:.38;
+    const out=prev*(1-mix)+target*mix;
+    st.lastWidth=out;st.lastVel=vel;
+    try{writeState.lastWidth=out;writeState.pkg401LastWidth=out;}catch(e){}
+    return clamp(out,Math.max(.72,base*.20),base*2.28);
+  };
+  try{pressureWidth=window.pressureWidth;}catch(e){}
+
+  window.drawDot=function(ctx,p,w,evt){
+    if(!isSumi()){
+      try{return typeof prevDrawDot==='function'?prevDrawDot(ctx,p,w,evt):undefined;}catch(e){return}
+    }
+    const st=state();st.points=0;st.startAt=evtTime(evt);st.lastMoveAt=st.startAt;st.lastAngle=null;st.lastVel=0;st.turnEnergy=0;st.lastWidth=Math.max(1,w*.70);st.lastDir={x:1,y:.06};
+    // 藏鋒起筆：先以極小筆鋒觸紙，再向內鋪毫，不直接出現圓形大點。
+    const a=penAngle(evt,1,.06);
+    stamp(ctx,p.x-.45,p.y-.10,Math.max(.7,w*.24),a,.66,.78,1);
+    stamp(ctx,p.x-.18,p.y-.04,Math.max(.8,w*.38),a,.78,.88,2);
+    stamp(ctx,p.x,p.y,Math.max(.9,w*.52),a,.88,.96,3);
+    return p;
+  };
+  try{drawDot=window.drawDot;}catch(e){}
+
+  window.strokeTo=function(ctx,from,to,width,evt){
+    if(!isSumi()){
+      try{return typeof prevStrokeTo==='function'?prevStrokeTo(ctx,from,to,width,evt):to;}catch(e){return to}
+    }
+    const dx=to.x-from.x,dy=to.y-from.y,dist=Math.hypot(dx,dy);if(dist<.025)return to;
+    const st=state(),now=evtTime(evt),dt=Math.max(1,now-(st.lastMoveAt||now-16)),vel=dist/dt;
+    const angle=Math.atan2(dy,dx),turn=st.lastAngle==null?0:angleDiff(angle,st.lastAngle);
+    // 轉折頓筆：急轉時先增加鋪毫，再順新方向行筆。
+    const turnBoost=turn>.52?clamp((turn-.45)*.24,.03,.22):0;
+    const pauseBoost=vel<.14?clamp((.14-vel)*.80,0,.10):0;
+    const startGrow=clamp(.52+st.points*.095,.52,1);
+    const w=Math.max(.70,width*startGrow*(1+turnBoost+pauseBoost));
+    const a=penAngle(evt,dx,dy);
+    const gap=clamp(w*.135,.72,2.45),n=Math.max(1,Math.min(96,Math.ceil(dist/gap)));
+    for(let i=1;i<=n;i++){
+      const r=i/n,x=from.x+dx*r,y=from.y+dy*r;
+      // 行筆中保持筆鋒方向，略帶提按波動；不是機械等寬線。
+      const fiber=1+Math.sin((st.points+i)*1.57+x*.014+y*.019)*.018;
+      const alpha=clamp(.91-vel*.055,.72,.94);
+      stamp(ctx,x,y,w*fiber,a,alpha,1,st.points+i);
+    }
+    if(turn>.55){
+      // 折筆先「頓」再轉：用少量重疊毫跡製造方折與蓄墨感。
+      const pool=clamp(.10+(turn-.55)*.16,.10,.28);
+      stamp(ctx,from.x,from.y,w*(1+pool),penAngle(evt,st.lastDir.x,st.lastDir.y),.24+pool,.95,300+st.points);
+      stamp(ctx,from.x+dx*.10,from.y+dy*.10,w*(.96+pool*.45),a,.20+pool*.75,.92,301+st.points);
+      st.turnEnergy=pool;
+    }else st.turnEnergy*=.72;
+    st.points+=n;st.lastAngle=angle;st.lastVel=vel;st.lastMoveAt=now;st.lastDir={x:dx,y:dy};st.lastWidth=w;
+    try{writeState.pkg401StrokePoints=st.points;writeState.pkg401LastDir={x:dx,y:dy};writeState.pkg401LastWidth=w;}catch(e){}
+    const mid={x:(from.x+to.x)/2,y:(from.y+to.y)/2};
+    try{writeState.pkg343PrevMid=mid;writeState.pkg369PrevMid=mid;}catch(e){}
+    return mid;
+  };
+  try{strokeTo=window.strokeTo;}catch(e){}
+
+  function finishStroke(evt){
+    if(!isSumi()||!window.writeState||!writeState.drawing)return;
+    const c=$('writingCanvas'),st=state(),p=writeState.lastPoint;if(!c||!p||!st.lastDir)return;
+    const len=Math.hypot(st.lastDir.x,st.lastDir.y)||1,ux=st.lastDir.x/len,uy=st.lastDir.y/len;
+    const ctx=c.getContext('2d'),base=Math.max(.8,Number(st.lastWidth||writeState.lastWidth)||6),a=penAngle(evt,ux,uy);
+    const down=uy>.25,diag=Math.abs(uy)>.28&&Math.abs(ux)>.28;
+    const isLeftFall=diag&&ux<0&&uy>0; // 撇
+    const isRightFall=diag&&ux>0&&uy>0; // 捺
+    const fast=Number(st.lastVel||0)>.40;
+    let steps=isLeftFall?10:(isRightFall?8:7);
+    let reach=isLeftFall?2.05:(isRightFall?1.55:(fast?1.75:1.15));
+    for(let i=1;i<=steps;i++){
+      const r=i/steps;
+      // 撇收鋒更快更尖；捺先略保持寬度再出鋒。
+      let factor;
+      if(isLeftFall)factor=Math.pow(1-r,1.34)*.92+.035;
+      else if(isRightFall)factor=r<.35?(.96+r*.08):Math.pow(1-(r-.35)/.65,1.15)*.99+.035;
+      else factor=Math.pow(1-r,1.22)*.88+.045;
+      const side=isRightFall?Math.sin(r*Math.PI)*base*.025:0;
+      stamp(ctx,p.x+ux*i*reach-uy*side,p.y+uy*i*reach+ux*side,Math.max(.48,base*factor),a,.79-r*.20,.82,500+i);
+    }
+    // 豎畫慢收時加極輕頓筆，快速離紙則保持尖鋒。
+    if(down&&!diag&&!fast)stamp(ctx,p.x,p.y,base*.72,a,.20,.90,590);
+    st.lastMoveAt=0;
+  }
+  function bind(){
+    const c=$('writingCanvas');if(!c||c.dataset.pkg402Brush==='1')return;
+    c.dataset.pkg402Brush='1';
+    c.addEventListener('pointerup',finishStroke,{capture:true,passive:true});
+    c.addEventListener('pointercancel',finishStroke,{capture:true,passive:true});
+  }
+  function upgradeUI(){
+    document.querySelectorAll('[data-pkg401-sumi]').forEach(b=>{
+      b.title='真毛筆｜楷書提按、藏鋒、頓筆、撇捺尖鋒';
+      if(!b.querySelector('.pkg402Tag')&&b.querySelector('span:last-child')){
+        const tag=document.createElement('span');tag.className='pkg402Tag';tag.textContent='楷';b.appendChild(tag);
+      }
+    });
+    bind();
+  }
+
+  document.addEventListener('click',function(e){
+    const b=e.target&&e.target.closest?e.target.closest('[data-pkg401-sumi]'):null;if(!b)return;
+    setTimeout(()=>{
+      try{
+        const a=$('toolbarBrushSize'),c=$('brushSize');
+        const cur=Number((a&&a.value)||(c&&c.value)||8);
+        if(cur<10){
+          if(a){a.value='12';a.dispatchEvent(new Event('change',{bubbles:true}));}
+          if(c){c.value='12';c.dispatchEvent(new Event('change',{bubbles:true}));}
+        }
+      }catch(err){}
+    },0);
+  },true);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(upgradeUI,260),{once:true});else setTimeout(upgradeUI,260);
+  window.addEventListener('load',()=>{setTimeout(upgradeUI,650);setTimeout(upgradeUI,2100);},{once:true});
+  document.addEventListener('fullscreenchange',()=>setTimeout(upgradeUI,100));
+  window.addEventListener('orientationchange',()=>setTimeout(upgradeUI,240),{passive:true});
+  setInterval(upgradeUI,1500);
+  document.documentElement.dataset.pkg402Brush=VERSION;
 })();
 </script>
