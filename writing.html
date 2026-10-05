@@ -105069,18 +105069,28 @@ function canvasPoint(evt){
 function brushWidth(){return Number($('toolbarBrushSize')?.value||$('brushSize')?.value||8);}
 function pointerShouldWrite(evt){
   if(!evt) return false;
-  // 多指觸控永遠不當成筆跡，避免縮放、手掌或第二根手指留下墨跡。
-  if(evt.pointerType==='touch' && evt.isPrimary===false) return false;
-  // Apple Pencil / 支援 PointerEvent 的觸控筆出現後，短時間忽略手指與手掌觸控。
-  if(evt.pointerType==='pen'){
-    writeState.lastPenAt=performance.now();
+  const type=evt.pointerType||'mouse';
+  const now=performance.now();
+  const phase=evt.type||'';
+  // 多指觸控永遠不當成筆跡，避免縮放、第二根手指或手掌留下墨跡。
+  if(type==='touch' && evt.isPrimary===false) return false;
+  // 真正觸控筆：直接放行；只記錄極短的尾端保護時間，不再封鎖 1.2 秒。
+  if(type==='pen'){
+    writeState.lastPenAt=now;
+    writeState.penPointerActive=!(phase==='pointerup'||phase==='pointercancel'||phase==='pointerleave');
     $('writeBoard')?.classList.add('pkg373-pen-active');
     return true;
   }
-  if(evt.pointerType==='touch' && writeState.lastPenAt && performance.now()-writeState.lastPenAt<1200) return false;
-  // 專注書寫模式仍允許被瀏覽器識別為 touch 的一般電容觸控筆。
+  if(type==='touch'){
+    const contact=Math.max(Number(evt.width)||0,Number(evt.height)||0);
+    // 觸控筆正在落筆時，拒絕同步出現的觸控；抬筆後僅保留 90ms 緩衝。
+    if(writeState.penPointerActive) return false;
+    if(writeState.lastPenAt && now-writeState.lastPenAt<90 && contact>12) return false;
+    // 大面積接觸通常是手掌；小接觸仍允許，兼容被 Safari 當成 touch 的副廠觸控筆。
+    if(contact>34) return false;
+  }
   if(writeState.focusWriting) return true;
-  if(writeState.mode==='full' && evt.pointerType==='touch') return false;
+  if(writeState.mode==='full' && type==='touch') return false;
   return true;
 }
 function installPkg330WritingGuards(){
@@ -107414,6 +107424,7 @@ body.pkg345-writing-fullscreen #pkg343FloatingMini{display:none!important;}
       if(shouldWrite(evt)){evt.preventDefault();evt.stopImmediatePropagation();}
       try{canvas.releasePointerCapture?.(evt.pointerId)}catch(e){}
       writeState.drawing=false;writeState.pointerId=null;writeState.lastPoint=null;writeState.prevPoint=null;writeState.pkg343PrevMid=null;
+      if(evt.pointerType==='pen') writeState.penPointerActive=false;
       try{finishStrokeRecord();}catch(e){}
       board.classList.remove('pkg343WritingActive');
       if(!document.fullscreenElement)safe('setWritingLock',false);
@@ -107809,6 +107820,16 @@ body.pkg345-writing-fullscreen #pkg376Panel:not(.show):not([data-open="1"]){disp
   document.addEventListener('webkitfullscreenchange',recover);
   document.addEventListener('pointerdown',e=>{if(e.target&&e.target.id==='writingCanvas')recover();},{capture:true,passive:true});
   window.addEventListener('load',recover,{once:true});
+})();
+</script>
+
+<!-- PKG396｜高速連續書寫：移除 1.2 秒 pen→touch 冷卻，避免快速落筆被誤擋 -->
+<script id="pkg396-fast-writing-guard">
+(function(){
+  function resetPenGate(){try{if(window.writeState)writeState.penPointerActive=false;}catch(e){}}
+  window.addEventListener('blur',resetPenGate,{passive:true});
+  document.addEventListener('visibilitychange',function(){if(document.hidden)resetPenGate();},{passive:true});
+  document.addEventListener('pointercancel',function(e){if(e.pointerType==='pen')resetPenGate();},{capture:true,passive:true});
 })();
 </script>
 </body>
