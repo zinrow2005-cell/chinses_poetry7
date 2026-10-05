@@ -108294,3 +108294,98 @@ body.pkg345-writing-fullscreen #pkg376Panel:not(.show):not([data-open="1"]){disp
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',safeSync,{once:true});else safeSync();
 })();
 </script>
+
+<!-- PKG397｜手機手指書寫恢復：PointerEvent 優先 + TouchEvent 安全備援 -->
+<style id="pkg397-mobile-writing-input-css">
+#writingCanvas{
+  pointer-events:auto!important;
+  touch-action:none!important;
+  -ms-touch-action:none!important;
+  -webkit-user-select:none!important;
+  user-select:none!important;
+  -webkit-touch-callout:none!important;
+}
+.writeBoard{touch-action:none!important;overscroll-behavior:contain!important;}
+</style>
+<script id="pkg397-mobile-writing-input-js">
+(function(){
+  const VERSION='PKG397-mobile-input';
+  const oldShould=window.pointerShouldWrite;
+  window.pointerShouldWrite=function(evt){
+    if(!evt)return false;
+    const type=evt.pointerType||'touch';
+    const now=performance.now();
+    if(type==='touch'){
+      if(evt.isPrimary===false)return false;
+      const contact=Math.max(Number(evt.width)||0,Number(evt.height)||0);
+      if(window.writeState&&writeState.penPointerActive)return false;
+      if(window.writeState&&writeState.lastPenAt&&now-writeState.lastPenAt<75&&contact>18)return false;
+      if(contact>42)return false;
+      // 手機以手指書寫時，不因「全文模式」而拒絕 touch。
+      return true;
+    }
+    try{return typeof oldShould==='function'?oldShould(evt):true;}catch(e){return true;}
+  };
+
+  function installTouchFallback(){
+    const canvas=document.getElementById('writingCanvas');
+    if(!canvas||canvas.dataset.pkg397TouchFallback==='1')return;
+    canvas.dataset.pkg397TouchFallback='1';
+    canvas.style.setProperty('pointer-events','auto','important');
+    canvas.style.setProperty('touch-action','none','important');
+
+    let active=false,lastPointerTouchAt=0;
+    canvas.addEventListener('pointerdown',function(e){if(e.pointerType==='touch')lastPointerTouchAt=performance.now();},{capture:true,passive:true});
+    canvas.addEventListener('pointermove',function(e){if(e.pointerType==='touch')lastPointerTouchAt=performance.now();},{capture:true,passive:true});
+
+    function synthetic(t,type){
+      return {
+        type:type,
+        clientX:t.clientX,clientY:t.clientY,
+        pointerType:'touch',pointerId:397,isPrimary:true,
+        pressure:0.68,width:(t.radiusX||0)*2,height:(t.radiusY||0)*2,
+        timeStamp:performance.now(),
+        preventDefault:function(){},stopPropagation:function(){},stopImmediatePropagation:function(){},
+        getCoalescedEvents:function(){return [this];}
+      };
+    }
+    function canFallback(){return performance.now()-lastPointerTouchAt>70;}
+
+    canvas.addEventListener('touchstart',function(e){
+      if(!e.touches||!e.touches[0])return;
+      // 有原生 touch PointerEvent 時由 PointerEvent 管線處理，避免一筆畫兩次。
+      if(!canFallback()){e.preventDefault();return;}
+      const ev=synthetic(e.touches[0],'touchstart');
+      if(!window.pointerShouldWrite(ev)){e.preventDefault();return;}
+      active=true;
+      try{if(typeof window.writingPointerDown==='function')window.writingPointerDown(ev);}catch(err){console.warn(VERSION,'down',err);}
+      e.preventDefault();
+    },{capture:true,passive:false});
+    canvas.addEventListener('touchmove',function(e){
+      if(!active||!e.touches||!e.touches[0]){if(active)e.preventDefault();return;}
+      const ev=synthetic(e.touches[0],'touchmove');
+      try{if(typeof window.writingPointerMove==='function')window.writingPointerMove(ev);}catch(err){console.warn(VERSION,'move',err);}
+      e.preventDefault();
+    },{capture:true,passive:false});
+    function finish(e){
+      if(!active)return;
+      active=false;
+      const ev={type:'touchend',pointerType:'touch',pointerId:397,isPrimary:true,timeStamp:performance.now(),preventDefault:function(){},stopPropagation:function(){},stopImmediatePropagation:function(){}};
+      try{if(typeof window.writingPointerUp==='function')window.writingPointerUp(ev);}catch(err){console.warn(VERSION,'up',err);}
+      try{e.preventDefault();}catch(x){}
+    }
+    canvas.addEventListener('touchend',finish,{capture:true,passive:false});
+    canvas.addEventListener('touchcancel',finish,{capture:true,passive:false});
+  }
+
+  function boot(){
+    // PKG373 會在 load 後約 1.65 秒替換 Canvas，因此最後再綁到真正正在使用的 Canvas。
+    setTimeout(installTouchFallback,1850);
+    setTimeout(installTouchFallback,2400);
+  }
+  if(document.readyState==='complete')boot();
+  else window.addEventListener('load',boot,{once:true});
+  window.addEventListener('pageshow',()=>setTimeout(installTouchFallback,120),{passive:true});
+  window.addEventListener('orientationchange',()=>setTimeout(installTouchFallback,260),{passive:true});
+})();
+</script>

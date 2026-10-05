@@ -1,0 +1,10 @@
+PKG397｜手機手指書寫恢復版
+
+修正：
+1. 移除舊邏輯「全文模式 touch 不可書寫」。
+2. 手機手指 touch 在單字／句子／全文都允許書寫。
+3. 保留 Apple Pencil/pen 防手掌誤觸。
+4. 新增 PointerEvent 優先、TouchEvent 備援；若手機瀏覽器 PointerEvent 不完整仍可書寫。
+5. 備援事件有去重，避免同一筆被 PointerEvent + TouchEvent 畫兩次。
+6. PKG373 替換 Canvas 後會重新綁定手機 touch 備援。
+7. Canvas 強制 pointer-events:auto / touch-action:none。
