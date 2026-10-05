@@ -1,0 +1,9 @@
+PKG395｜全螢幕與書寫事件修正版
+
+修正：
+1. 停用 PKG394 MutationObserver 強制隔離邏輯。
+2. 全螢幕改回既有 fullscreenWriting / pkg333FullscreenHost 機制。
+3. 僅以 CSS 隱藏右側設定、標題等非必要內容，不再修改 Canvas display/pointer-events。
+4. 強制 writingCanvas 在一般與全螢幕保持 pointer-events:auto、touch-action:none。
+5. 全螢幕切換後重新校正 Canvas 尺寸與底字。
+6. 保留 PKG393 的 A-/A+ 直接縮放與全螢幕小圖示列。

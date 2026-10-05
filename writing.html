@@ -107770,6 +107770,47 @@ body.pkg345-writing-fullscreen .pkg384Panel{top:50px!important;}
  body.pkg345-writing-fullscreen .boardCard.pkg333FullscreenHost .writeBoard.fullscreenWriting{top:calc(98px + env(safe-area-inset-top))!important;height:calc(100dvh - 98px - env(safe-area-inset-top))!important;min-height:calc(100dvh - 98px - env(safe-area-inset-top))!important;}
 }
 </style>
+
+<style id="pkg395-fullscreen-safe-css">
+/* PKG395｜安全全螢幕：不再改動 Canvas 的顯示樹，只隱藏非必要內容 */
+body.pkg345-writing-fullscreen::before{display:none!important;}
+body.pkg345-writing-fullscreen .side,
+body.pkg345-writing-fullscreen .topbar,
+body.pkg345-writing-fullscreen .boardHead,
+body.pkg345-writing-fullscreen #pkg374PracticeRail,
+body.pkg345-writing-fullscreen .pkg343Dock,
+body.pkg345-writing-fullscreen #pkg343FloatingMini,
+body.pkg345-writing-fullscreen .pkg343FloatingMini,
+body.pkg345-writing-fullscreen .pkg330FloatingExit,
+body.pkg345-writing-fullscreen .writeToolbar{display:none!important;visibility:hidden!important;}
+body.pkg345-writing-fullscreen .studio{display:block!important;position:static!important;width:auto!important;height:auto!important;min-height:0!important;overflow:visible!important;background:#fffaf2!important;}
+body.pkg345-writing-fullscreen .boardCard.pkg333FullscreenHost{display:block!important;position:fixed!important;inset:0!important;z-index:2147482400!important;width:100vw!important;height:100dvh!important;min-height:100dvh!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;overflow:hidden!important;background:#fffaf2!important;}
+body.pkg345-writing-fullscreen .boardCard.pkg333FullscreenHost .writeBoard.fullscreenWriting{display:block!important;visibility:visible!important;pointer-events:auto!important;position:fixed!important;left:0!important;right:0!important;bottom:0!important;z-index:2147482500!important;background:#fffaf2!important;opacity:1!important;}
+body.pkg345-writing-fullscreen #writingCanvas{display:block!important;visibility:visible!important;pointer-events:auto!important;touch-action:none!important;z-index:3!important;}
+body.pkg345-writing-fullscreen .writeGuide{pointer-events:none!important;z-index:1!important;}
+body.pkg345-writing-fullscreen .pkg384FsMini{display:block!important;visibility:visible!important;pointer-events:auto!important;z-index:2147483640!important;}
+body.pkg345-writing-fullscreen #pkg376Summary{display:flex!important;visibility:visible!important;pointer-events:auto!important;z-index:2147483600!important;}
+body.pkg345-writing-fullscreen #pkg376Panel:not(.show):not([data-open="1"]){display:none!important;}
+</style>
+<script id="pkg395-fullscreen-recover-js">
+(function(){
+  function recover(){
+    const canvas=document.getElementById('writingCanvas');
+    const board=document.getElementById('writeBoard');
+    if(canvas){canvas.style.setProperty('pointer-events','auto','important');canvas.style.setProperty('touch-action','none','important');}
+    if(board){board.style.setProperty('pointer-events','auto','important');}
+    if(document.body.classList.contains('pkg345-writing-fullscreen')){
+      board?.classList.add('fullscreenWriting');
+      board?.closest('.boardCard')?.classList.add('pkg333FullscreenHost');
+      setTimeout(()=>{try{resizeWritingCanvas(true);renderWritingGuide();}catch(e){}},80);
+    }
+  }
+  document.addEventListener('fullscreenchange',recover);
+  document.addEventListener('webkitfullscreenchange',recover);
+  document.addEventListener('pointerdown',e=>{if(e.target&&e.target.id==='writingCanvas')recover();},{capture:true,passive:true});
+  window.addEventListener('load',recover,{once:true});
+})();
+</script>
 </body>
 </html>
 
@@ -108210,24 +108251,25 @@ body.pkg345-writing-fullscreen #pkg376Panel{visibility:visible!important;pointer
 body.pkg345-writing-fullscreen #pkg376Panel:not(.show):not([data-open="1"]){display:none!important;}
 </style>
 <script id="pkg394-fullscreen-isolation-js">
+/* PKG395：停用 PKG394 的 MutationObserver 強制清理。
+   全螢幕改由 CSS 與既有 fullscreenWriting / pkg333FullscreenHost 控制，避免破壞 Canvas pointer 事件。 */
 (function(){
-  function cleanFullscreen(){
+  function safeSync(){
     const active=document.body.classList.contains('pkg345-writing-fullscreen');
-    if(!active)return;
-    document.body.classList.remove('pkg343-settings-open','pkg372ShowWritingTools','pkg372ModeMenuOpen');
-    try{if(typeof window.pkg384CloseFsPanels==='function')window.pkg384CloseFsPanels();}catch(e){}
     const side=document.querySelector('.side');
-    if(side){side.style.setProperty('display','none','important');side.setAttribute('aria-hidden','true');}
+    if(side){
+      if(active){side.setAttribute('aria-hidden','true');}
+      else{side.removeAttribute('aria-hidden');}
+    }
+    const canvas=document.getElementById('writingCanvas');
+    if(canvas){
+      canvas.style.setProperty('pointer-events','auto','important');
+      canvas.style.setProperty('touch-action','none','important');
+    }
   }
-  function restore(){
-    if(document.body.classList.contains('pkg345-writing-fullscreen'))return;
-    const side=document.querySelector('.side');
-    if(side){side.style.removeProperty('display');side.removeAttribute('aria-hidden');}
-  }
-  document.addEventListener('fullscreenchange',()=>setTimeout(()=>{cleanFullscreen();restore();},40));
-  document.addEventListener('webkitfullscreenchange',()=>setTimeout(()=>{cleanFullscreen();restore();},40));
-  window.addEventListener('resize',()=>{if(document.body.classList.contains('pkg345-writing-fullscreen'))cleanFullscreen();},{passive:true});
-  const mo=new MutationObserver(()=>{if(document.body.classList.contains('pkg345-writing-fullscreen'))cleanFullscreen();else restore();});
-  try{mo.observe(document.body,{attributes:true,attributeFilter:['class']});}catch(e){}
+  document.addEventListener('fullscreenchange',()=>setTimeout(safeSync,50));
+  document.addEventListener('webkitfullscreenchange',()=>setTimeout(safeSync,50));
+  window.addEventListener('resize',()=>setTimeout(safeSync,50),{passive:true});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',safeSync,{once:true});else safeSync();
 })();
 </script>
