@@ -108137,3 +108137,97 @@ body.pkg345-writing-fullscreen .pkg384Panel{top:50px!important;}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(refit,80),{once:true});else setTimeout(refit,80);
 })();
 </script>
+
+<!-- PKG394｜真正全螢幕隔離層：禁止原頁面內容從畫布後方露出 -->
+<style id="pkg394-fullscreen-isolation-css">
+/* 建立完整底色，確保原頁面任何卡片都不可能透出 */
+body.pkg345-writing-fullscreen::before{
+  content:""!important;
+  position:fixed!important;
+  inset:0!important;
+  z-index:2147482400!important;
+  background:#fffaf2!important;
+  pointer-events:none!important;
+}
+/* 全螢幕期間，原本頁面非必要內容全部退出視覺層 */
+body.pkg345-writing-fullscreen .topbar,
+body.pkg345-writing-fullscreen .side,
+body.pkg345-writing-fullscreen .boardHead,
+body.pkg345-writing-fullscreen .pkg343Dock,
+body.pkg345-writing-fullscreen #pkg343FloatingMini,
+body.pkg345-writing-fullscreen .pkg343FloatingMini,
+body.pkg345-writing-fullscreen .pkg330FloatingExit,
+body.pkg345-writing-fullscreen #pkg374PracticeRail,
+body.pkg345-writing-fullscreen .writeToolbar{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+/* 主書寫卡固定成真正的全畫面容器，不再保留原雙欄/右側欄空間 */
+body.pkg345-writing-fullscreen .studio{
+  display:block!important;
+  position:fixed!important;
+  inset:0!important;
+  z-index:2147482450!important;
+  width:100vw!important;
+  height:100dvh!important;
+  min-height:100dvh!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  background:#fffaf2!important;
+}
+body.pkg345-writing-fullscreen .boardCard.pkg333FullscreenHost{
+  display:block!important;
+  position:fixed!important;
+  inset:0!important;
+  z-index:2147482460!important;
+  width:100vw!important;
+  height:100dvh!important;
+  min-height:100dvh!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  overflow:hidden!important;
+  background:#fffaf2!important;
+}
+/* 畫布仍位於進度列下方；中間不留任何可看到舊頁面的透明區 */
+body.pkg345-writing-fullscreen .boardCard.pkg333FullscreenHost .writeBoard.fullscreenWriting{
+  position:fixed!important;
+  left:0!important;
+  right:0!important;
+  bottom:0!important;
+  z-index:2147482500!important;
+  background:#fffaf2!important;
+  opacity:1!important;
+}
+/* 只保留真正需要的全螢幕元件 */
+body.pkg345-writing-fullscreen .pkg384FsMini{display:block!important;visibility:visible!important;pointer-events:auto!important;}
+body.pkg345-writing-fullscreen #pkg376Summary{display:flex!important;visibility:visible!important;pointer-events:auto!important;}
+body.pkg345-writing-fullscreen #pkg376Panel{visibility:visible!important;pointer-events:auto!important;}
+/* 成果面板未主動開啟時不可佔據或透出頁面 */
+body.pkg345-writing-fullscreen #pkg376Panel:not(.show):not([data-open="1"]){display:none!important;}
+</style>
+<script id="pkg394-fullscreen-isolation-js">
+(function(){
+  function cleanFullscreen(){
+    const active=document.body.classList.contains('pkg345-writing-fullscreen');
+    if(!active)return;
+    document.body.classList.remove('pkg343-settings-open','pkg372ShowWritingTools','pkg372ModeMenuOpen');
+    try{if(typeof window.pkg384CloseFsPanels==='function')window.pkg384CloseFsPanels();}catch(e){}
+    const side=document.querySelector('.side');
+    if(side){side.style.setProperty('display','none','important');side.setAttribute('aria-hidden','true');}
+  }
+  function restore(){
+    if(document.body.classList.contains('pkg345-writing-fullscreen'))return;
+    const side=document.querySelector('.side');
+    if(side){side.style.removeProperty('display');side.removeAttribute('aria-hidden');}
+  }
+  document.addEventListener('fullscreenchange',()=>setTimeout(()=>{cleanFullscreen();restore();},40));
+  document.addEventListener('webkitfullscreenchange',()=>setTimeout(()=>{cleanFullscreen();restore();},40));
+  window.addEventListener('resize',()=>{if(document.body.classList.contains('pkg345-writing-fullscreen'))cleanFullscreen();},{passive:true});
+  const mo=new MutationObserver(()=>{if(document.body.classList.contains('pkg345-writing-fullscreen'))cleanFullscreen();else restore();});
+  try{mo.observe(document.body,{attributes:true,attributeFilter:['class']});}catch(e){}
+})();
+</script>
