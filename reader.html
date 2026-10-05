@@ -9,7 +9,7 @@
 <meta content="胖超詩詞書寫" name="apple-mobile-web-app-title"/>
 <meta content="black-translucent" name="apple-mobile-web-app-status-bar-style"/>
 <meta content="telephone=no" name="format-detection"/>
-<link href="./manifest.webmanifest?pkg=388" rel="manifest"/>
+<link href="./manifest.webmanifest?pkg=404" rel="manifest"/>
 <link href="./icons/icon-192.png" rel="icon" sizes="192x192" type="image/png"/>
 <link href="./icons/apple-touch-icon.png" rel="apple-touch-icon"/>
 <meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control"/><meta content="no-cache" http-equiv="Pragma"/><meta content="0" http-equiv="Expires"/><meta content="369" name="daofa-build-version"/>
@@ -106823,3 +106823,185 @@ body.daofaMobileMode.mobileShowFilters .main,body.daofaMobileMode.mobileShowLibr
 </script>
 </body>
 </html>
+
+<!-- PKG404｜iPhone / iPad Safari AI 朗讀穩定化 -->
+<script id="pkg404-mobile-speech-fix">
+(function(){
+  'use strict';
+  const VERSION='PKG404-mobile-speech-v1';
+  const ua=navigator.userAgent||'';
+  const isiOS=/iPad|iPhone|iPod/i.test(ua) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+  const isTouchDevice=('ontouchstart' in window) || (navigator.maxTouchPoints||0)>0;
+  let pkg404Utterance=null;
+  let pkg404RunId=0;
+  let pkg404Started=false;
+  let pkg404Retry=0;
+  let pkg404StartWatch=0;
+  let pkg404NextTimer=0;
+  let pkg404NativePaused=false;
+
+  function clearTimers(){
+    clearTimeout(pkg404StartWatch); clearTimeout(pkg404NextTimer);
+    pkg404StartWatch=0; pkg404NextTimer=0;
+  }
+  function refreshVoices(){
+    try{
+      const vs=speechSynthesis.getVoices()||[];
+      if(vs.length){ availableVoices=vs; renderVoiceSelect(); }
+      return vs;
+    }catch(e){ return []; }
+  }
+  function splitMobileChunk(text){
+    text=String(text||'').replace(/\s+/g,' ').trim();
+    if(!text) return [];
+    const max=isiOS?70:(isTouchDevice?100:180);
+    if(text.length<=max) return [text];
+    const pieces=text.split(/(?<=[。！？；，、：,.!?;:])/).map(x=>x.trim()).filter(Boolean);
+    const out=[]; let buf='';
+    function pushBuf(){ if(buf.trim()){out.push(buf.trim());buf='';} }
+    pieces.forEach(p=>{
+      if(p.length>max){
+        pushBuf();
+        for(let i=0;i<p.length;i+=max) out.push(p.slice(i,i+max));
+      }else if((buf+p).length>max){ pushBuf(); buf=p; }
+      else buf+=p;
+    });
+    pushBuf();
+    return out;
+  }
+  function normalizeParts(parts){
+    return (parts||[]).flatMap(splitMobileChunk).map(x=>String(x).trim()).filter(Boolean);
+  }
+  function safeCancel(){
+    clearTimers();
+    try{speechSynthesis.cancel();}catch(e){}
+    // Safari 偶爾會殘留 paused 狀態；先 resume 清掉，不依賴原生 pause 作為 iOS 的主要流程。
+    try{speechSynthesis.resume();}catch(e){}
+    pkg404Utterance=null;
+    pkg404NativePaused=false;
+  }
+  function chooseVoice(){
+    refreshVoices();
+    try{return pickVoice(speechSettings.mode);}catch(e){return null;}
+  }
+  function speakAtCurrentIndex(runId, forceDefaultVoice){
+    if(runId!==pkg404RunId || speechStopped || speechPaused) return;
+    if(speechQueueIndex>=speechQueue.length){
+      pkg404Utterance=null; speechStopped=true; updateVoiceStatus('朗讀完成'); return;
+    }
+    const text=speechQueue[speechQueueIndex];
+    const u=new SpeechSynthesisUtterance(text);
+    pkg404Utterance=u; // iOS Safari：必須保留強參考，避免 utterance 被 GC 後提早中止。
+    pkg404Started=false;
+    u.lang='zh-TW';
+    if(!forceDefaultVoice){
+      const v=chooseVoice();
+      if(v){ try{u.voice=v;}catch(e){} }
+    }
+    u.rate=Math.min(1.35,Math.max(0.45,Number(speechSettings.rate)||0.85));
+    u.pitch=Math.min(1.5,Math.max(0.65,Number(speechSettings.pitch)||1.05));
+    u.volume=1;
+    u.onstart=function(){
+      if(runId!==pkg404RunId) return;
+      pkg404Started=true; pkg404Retry=0; clearTimeout(pkg404StartWatch);
+      updateVoiceStatus(`${speechModeLabel(speechSettings.mode)}｜朗讀中 ${speechQueueIndex+1}/${speechQueue.length}`);
+    };
+    u.onend=function(){
+      if(runId!==pkg404RunId || speechStopped || speechPaused) return;
+      clearTimeout(pkg404StartWatch); pkg404Utterance=null; pkg404Retry=0;
+      speechQueueIndex++;
+      const pause=Math.max(60,Number(speechSettings.pause)||420);
+      pkg404NextTimer=setTimeout(()=>speakAtCurrentIndex(runId,false),pause);
+    };
+    u.onerror=function(ev){
+      if(runId!==pkg404RunId || speechStopped || speechPaused) return;
+      clearTimeout(pkg404StartWatch); pkg404Utterance=null;
+      const err=String((ev&&ev.error)||'unknown');
+      // interrupted/canceled 通常是使用者切換朗讀，不當作真正錯誤。
+      if(/interrupted|canceled|cancelled/i.test(err)) return;
+      if(pkg404Retry<1){
+        pkg404Retry++;
+        try{speechSynthesis.cancel(); speechSynthesis.resume();}catch(e){}
+        pkg404NextTimer=setTimeout(()=>speakAtCurrentIndex(runId,true),isiOS?120:70);
+      }else{
+        pkg404Retry=0; speechQueueIndex++;
+        updateVoiceStatus(`此句略過｜${speechQueueIndex}/${speechQueue.length}`);
+        pkg404NextTimer=setTimeout(()=>speakAtCurrentIndex(runId,false),120);
+      }
+    };
+    try{
+      // 第一個 utterance 必須仍在使用者 click 呼叫堆疊內 speak，避免 iOS 的媒體啟動限制。
+      speechSynthesis.speak(u);
+    }catch(e){
+      u.onerror&&u.onerror({error:'speak-failed'}); return;
+    }
+    // iOS Safari 某些版本 cancel→speak 會靜默失敗，不觸發 start/error；偵測後自動重試一次。
+    pkg404StartWatch=setTimeout(function(){
+      if(runId!==pkg404RunId || speechStopped || speechPaused || pkg404Started) return;
+      if(pkg404Retry<1){
+        pkg404Retry++;
+        try{speechSynthesis.cancel(); speechSynthesis.resume();}catch(e){}
+        setTimeout(()=>speakAtCurrentIndex(runId,true),isiOS?100:60);
+      }else{
+        updateVoiceStatus('語音啟動失敗，請再點一次朗讀');
+        speechStopped=true; pkg404Utterance=null;
+      }
+    },isiOS?950:1300);
+  }
+
+  // 覆寫舊控制器：保留桌機既有 UI/設定，但在手機/iPad 採用穩定佇列。
+  window.speakQueue=speakQueue=function(parts,mode){
+    if(!speechSupported()){alert('這個瀏覽器不支援語音朗讀。');return;}
+    pkg404RunId++;
+    safeCancel();
+    speechQueue=normalizeParts(parts);
+    speechQueueIndex=0; speechPaused=false; speechStopped=false; pkg404Retry=0;
+    if(mode) speechSettings.mode=mode;
+    if(!speechQueue.length){updateVoiceStatus('沒有可朗讀內容');speechStopped=true;return;}
+    updateVoiceStatus(`準備朗讀 1/${speechQueue.length}`);
+    // 同步啟動，保留 iOS 使用者手勢授權。
+    speakAtCurrentIndex(pkg404RunId,false);
+  };
+  window.speakNextChunk=speakNextChunk=function(){ speakAtCurrentIndex(pkg404RunId,false); };
+  window.stopSpeech=stopSpeech=function(){
+    pkg404RunId++; speechStopped=true; speechPaused=false; speechQueue=[]; speechQueueIndex=0;
+    safeCancel(); updateVoiceStatus('已停止');
+  };
+  window.pauseSpeech=pauseSpeech=function(){
+    if(!speechSupported()||speechStopped) return;
+    speechPaused=true; clearTimers();
+    if(isiOS||isTouchDevice){
+      // iOS 原生 pause/resume 在多段 utterance 上不穩定；取消目前句，續播時從該句重新開始。
+      try{speechSynthesis.cancel();}catch(e){}
+      pkg404Utterance=null;
+    }else{
+      try{speechSynthesis.pause();pkg404NativePaused=true;}catch(e){}
+    }
+    updateVoiceStatus('已暫停');
+  };
+  window.resumeSpeech=resumeSpeech=function(){
+    if(!speechSupported()||!speechPaused) return;
+    speechPaused=false; speechStopped=false;
+    if(!isiOS&&!isTouchDevice&&pkg404NativePaused){
+      pkg404NativePaused=false; try{speechSynthesis.resume();updateVoiceStatus('繼續朗讀');return;}catch(e){}
+    }
+    updateVoiceStatus('繼續朗讀');
+    speakAtCurrentIndex(pkg404RunId,false);
+  };
+
+  // iOS 的 voiceschanged 不一定可靠；pageshow/第一次觸控/回到前景都重新抓聲音。
+  function warmVoices(){ if(speechSupported()) refreshVoices(); }
+  window.addEventListener('pageshow',warmVoices,{passive:true});
+  document.addEventListener('visibilitychange',function(){if(!document.hidden)warmVoices();});
+  document.addEventListener('pointerdown',warmVoices,{once:true,passive:true,capture:true});
+  setTimeout(warmVoices,50); setTimeout(warmVoices,500); setTimeout(warmVoices,1600);
+
+  // 切換作品時停止上一首，避免 iOS 背景仍繼續念舊內容。
+  document.addEventListener('click',function(e){
+    const item=e.target&&e.target.closest&&e.target.closest('.item,[data-poem-index]');
+    if(item && !speechStopped){ try{stopSpeech();}catch(_){} }
+  },true);
+
+  document.documentElement.dataset.pkg404Speech=VERSION;
+})();
+</script>

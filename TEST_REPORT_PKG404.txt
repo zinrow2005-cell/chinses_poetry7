@@ -1,0 +1,28 @@
+PKG404｜手機 / iPad AI 朗讀穩定化測試報告
+日期：2026-10-05
+
+本版檢查重點
+1. iPhone 尺寸 390×844：整首朗讀可啟動、模式參數有套用、UI 按鈕可點。
+2. iPad 直式 768×1024：朗讀可啟動、UI 按鈕可點。
+3. iPad 橫式 1024×768：朗讀可啟動、UI 按鈕可點。
+4. 模擬 iOS Safari cancel→speak 靜默失敗：950ms watchdog 可自動 cancel/resume 並用系統預設聲音重試，同一句可恢復播放。
+5. 四種朗讀模式參數：
+   - 詩詞慢讀 rate 0.72 / pitch 1.08
+   - 老師導讀 rate 0.88 / pitch 0.94
+   - 兒童慢讀 rate 0.62 / pitch 1.22
+   - 白話解釋 rate 0.98 / pitch 1.00
+6. iPad 模擬 pause/resume：暫停狀態可進入；續播會由目前句重新開始，避免 iOS 原生 pause/resume 卡死。
+7. Browser runtime JavaScript error：0。
+
+修正內容
+- 保留目前 SpeechSynthesisUtterance 的強參考，避免 iOS Safari 垃圾回收造成中途停止。
+- 長文自動切成較短片段；iOS 每段約 70 字以內。
+- 第一次朗讀仍在使用者點擊呼叫堆疊內同步 speak，降低 iOS 媒體啟動限制問題。
+- 增加 cancel→speak 靜默失敗 watchdog 與一次自動重試。
+- iOS / touch 裝置的暫停改為邏輯暫停：取消目前句，繼續時由目前句重新播放，避免 Safari 原生 pause/resume 不穩定。
+- pageshow / 回到前景 / 第一次觸控時重新載入 voices。
+- 切換作品時停止上一首，避免背景繼續念舊內容。
+- 手機/iPad/桌機共用原本朗讀設定 UI，不改變電腦版已正常的操作方式。
+
+測試說明
+本環境使用 Chromium 實際渲染頁面，套用 iPhone/iPad 尺寸與 iOS Safari User-Agent，並以模擬 Web Speech API 驗證朗讀佇列、語音參數、啟動失敗恢復、暫停/續播和 UI 點擊事件。這不是實體 iPhone/iPad Safari 的喇叭輸出測試；實際裝置可用聲音名稱仍由 iOS 系統決定。
