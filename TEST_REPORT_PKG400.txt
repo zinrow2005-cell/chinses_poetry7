@@ -1,0 +1,43 @@
+PKG400 全螢幕右側設定完全隱藏版｜實際瀏覽器測試
+日期：2026-10-05
+
+修正內容
+- 全螢幕按鈕觸發時，在 requestFullscreen 前就先套用全螢幕狀態。
+- 不再等待 fullscreenchange 才隱藏原右側設定欄。
+- .side / topbar / boardHead / writeToolbar 在全螢幕立即 display:none + visibility:hidden + pointer-events:none。
+- writeBoard 在全螢幕固定為最上層完整書寫區。
+- writingCanvas 保持 pointer-events:auto、touch-action:none，避免影響書寫。
+
+Chromium 實際渲染 / DOM 測試
+1. 手機 390x844
+   - 右側設定欄 display:none / visibility:hidden：PASS
+   - Canvas 全螢幕區：390x746，y=98：PASS
+   - 工具列顯示：PASS
+   - 進度列顯示：PASS
+   - 實際滑鼠模擬筆畫造成 Canvas 像素改變：PASS
+   - JavaScript runtime errors：0
+
+2. iPad 直式 768x1024
+   - 右側設定欄完全隱藏：PASS
+   - Canvas：753x914，y=110：PASS
+   - 工具列 / 進度列：PASS
+   - 書寫像素變化：PASS
+   - JavaScript runtime errors：0
+
+3. iPad 橫式 1024x768
+   - 右側設定欄完全隱藏：PASS
+   - Canvas：1009x658，y=110：PASS
+   - 工具列 / 進度列：PASS
+   - 書寫像素變化：PASS
+   - JavaScript runtime errors：0
+   - 截圖目視確認：畫布上方只剩工具列與進度列，沒有「作品與目前臨摹」卡片露出。
+
+4. 桌機 1440x900
+   - 右側設定欄完全隱藏：PASS
+   - Canvas：1425x790，y=110：PASS
+   - 工具列 / 進度列：PASS
+   - 書寫像素變化：PASS
+   - JavaScript runtime errors：0
+
+備註
+- 以上為 Chromium 的實際 DOM/渲染與書寫事件測試，不等同於實體 iPad Safari 硬體測試。
