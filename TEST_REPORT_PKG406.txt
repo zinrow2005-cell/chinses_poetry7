@@ -1,0 +1,30 @@
+PKG406 手機底部工具列精簡版測試報告
+日期：2026-10-05
+
+修改內容
+1. 手機底部工具列移除「AI朗讀」圖示。
+2. 底部工具列改為 5 項：閱讀／作品／篩選／學習／書寫。
+3. 5 項重新平均分配寬度，不留空格。
+4. 保留閱讀頁內 AI朗讀入口（voiceQuickBar 內的 AI朗讀按鈕）。
+5. 舊導覽穩定器同步改為 5 項，避免它重新把「朗讀」補回來。
+
+實際 Chromium 渲染測試（page.set_content）
+- 手機 390×844：PASS
+  - mobileBottomNav = 5 項
+  - tabs = read / allLibrary / filters / learning / write
+  - speech tab = 不存在
+  - grid = 5 等分
+  - 閱讀頁 AI朗讀按鈕 = 存在、display:flex
+  - JavaScript runtime error = 0
+- iPad 直式 768×1024：PASS
+  - 不強制使用手機底部導覽
+  - JavaScript runtime error = 0
+- iPad 橫式 1024×768：PASS
+  - 不強制使用手機底部導覽
+  - JavaScript runtime error = 0
+- 桌機 1440×900：PASS
+  - 不受手機導覽修改影響
+  - JavaScript runtime error = 0
+
+備註
+此測試使用 Chromium 裝置尺寸模擬；不是實體 iPhone/iPad Safari 硬體測試。
